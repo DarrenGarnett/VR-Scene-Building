@@ -5,7 +5,7 @@ using UnityEngine;
 public class drive_controller : MonoBehaviour
 {
     Animator ani;
-    float xmult = 0.2f;
+    float xmult = 0.5f;
 
     // Start is called before the first frame update
     void Start()
