@@ -1,0 +1,5 @@
+spawn Vehicles_PizzaCar -15
+spawn Vehicles_PizzaCar -15 10 5
+spawn Vehicles_HotdogTruck -5 10 5 0 90 0
+spawn Vehicles_PizzaCar 5 10 5 0 90 0 2 2 2
+end
