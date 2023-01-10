@@ -1090,8 +1090,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b52c15e08c2ae84438e46ce90d9d1c66, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  curObject: {fileID: 0}
-  commands: []
+  textPath: Assets/Text Files/input.txt
 --- !u!4 &1655681583
 Transform:
   m_ObjectHideFlags: 0
