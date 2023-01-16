@@ -4,4 +4,7 @@
 4 spawn Vehicles_PizzaCar P3 5 10 5 0 90 0 2 2 2
 5 translate P1 0 5 0
 6 animate P2 Vehicles_PizzaCar 2
-7 end
+7 spawn Vehicles_PizzaCar P4
+7 animate P4 Spin 1
+7 path P4 Path1
+8 end

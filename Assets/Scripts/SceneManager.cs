@@ -5,6 +5,8 @@ using UnityEditor;
 using System;
 using System.IO;
 using System.Linq;
+using PathCreation;
+using PathCreation.Examples;
 
 public class Command
 {
@@ -121,6 +123,36 @@ public class SceneManager : MonoBehaviour
         return 0;
     }
 
+    //Applies an already existing path to the specified object
+    int path(string command, string[] terms)
+    {
+        //Test for minimum terms
+        if(terms.Count() < 4)
+        {
+            Debug.Log("Invalid terms for moving obect with command '" + command + "'");
+            return 1;
+        }
+        else
+        {
+            //Apply given path
+            curObject = GameObject.Find(terms[2]);
+            PathFollower curFollower = curObject.GetComponent<PathFollower>() as PathFollower;
+
+            GameObject pathObject = GameObject.Find(terms[3]);
+            PathCreator curCreator = pathObject.GetComponent<PathCreator>() as PathCreator;
+
+            curFollower.pathCreator = curCreator;
+
+            Debug.Log(curCreator);
+            Debug.Log(curFollower.pathCreator);
+        }
+
+        //Applying an animtor to a pathed object does not work unless apply root motion is inactive
+        //Even then, this does not enable translation, but does work for rotation
+
+        return 0;
+    }
+
     //Determines which command is to be executed
     int execute(string command)
     {
@@ -141,6 +173,9 @@ public class SceneManager : MonoBehaviour
                 break;
             case "animate":
                 result = animate(command, terms);
+                break;
+            case "path":
+                result = path(command, terms);
                 break;
             default:
                 Debug.Log("Unrecognized command: '" + terms[1] + "'");
