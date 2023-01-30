@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEditor;
 using System;
 using System.IO;
@@ -15,13 +16,14 @@ public class Command
     public float time;
 }
 
-public class SceneManager : MonoBehaviour
+public class SceneManip : MonoBehaviour
 {
     private GameObject curObject;
     private string[] commands;
     public string textPath;
     private int index;
     private Command curCommand;
+    private Scene curScene;
 
     //Creates a new instance of the specified prefab with optional specified transformation values
     int spawn(string command, string[] terms)
@@ -115,8 +117,21 @@ public class SceneManager : MonoBehaviour
         {
             //Apply given animator
             curObject = GameObject.Find(terms[2]);
+            if(curObject == null)
+            {
+                Debug.Log("Can't apply animator, could not find gameObject.");
+                return 1;
+            }
+            
             Animator curAnimator = curObject.GetComponent<Animator>();
+            if(curAnimator == null)
+            {
+                Debug.Log("Can't apply animator, could not find animator.");
+                return 1;
+            }
+            
             curAnimator.runtimeAnimatorController = Resources.Load("SimpleTownLite/_Demo/" + terms[3]) as RuntimeAnimatorController;
+            
             curAnimator.SetFloat("speed_multi", Convert.ToSingle(terms[4]));
         }
 
@@ -134,22 +149,29 @@ public class SceneManager : MonoBehaviour
         }
         else
         {
-            //Apply given path
+            //Initialize path script
             curObject = GameObject.Find(terms[2]);
             PathFollower curFollower = curObject.GetComponent<PathFollower>() as PathFollower;
+            curFollower.enabled = true;
 
+            //Assign path by name
             GameObject pathObject = GameObject.Find(terms[3]);
             PathCreator curCreator = pathObject.GetComponent<PathCreator>() as PathCreator;
 
             curFollower.pathCreator = curCreator;
-
-            Debug.Log(curCreator);
-            Debug.Log(curFollower.pathCreator);
         }
+        return 0;
+    }
 
-        //Applying an animtor to a pathed object does not work unless apply root motion is inactive
-        //Even then, this does not enable translation, but does work for rotation
-
+    int unload(string command, string[] terms)
+    {
+        //Test for minimum terms
+        if(terms.Count() < 2)
+        {
+            Debug.Log("Invalid terms for moving obect with command '" + command + "'");
+            return 1;
+        }
+        else SceneManager.LoadScene(sceneName: "Empty");
         return 0;
     }
 
@@ -177,6 +199,9 @@ public class SceneManager : MonoBehaviour
             case "path":
                 result = path(command, terms);
                 break;
+            case "end":
+                result = unload(command, terms);
+                break;
             default:
                 Debug.Log("Unrecognized command: '" + terms[1] + "'");
                 result = -1;
@@ -193,6 +218,8 @@ public class SceneManager : MonoBehaviour
         {
             //Store the contents of the input file
             commands = System.IO.File.ReadAllLines(textPath);
+
+            //foreach(string command in commands) Debug.Log(command);
         }
         else Debug.Log("Could not open file");
     }
@@ -200,18 +227,22 @@ public class SceneManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //Get the current command
-        curCommand = getCommand(index);
-
-        //Ensure the current command's time has been reached, and that the last command has not been reached
-        if(Time.time > curCommand.time && index < commands.Count() - 1)
+        if(index < commands.Count())
         {
-            //Execute the current command
-            execute(curCommand.line);
+            //Get the current command
+            curCommand = getCommand(index);
 
-            //Move to the next command
-            index++;
-        }
+            //Ensure the current command's time has been reached, and that the last command has not been reached
+            //if(Time.time > curCommand.time && index < commands.Count() - 1)
+            if(Time.time > curCommand.time)
+            {
+                //Execute the current command
+                execute(curCommand.line);
+
+                //Move to the next command
+                index++;
+            }
+        }  
     }
 
     //Gets the command data for the given index
