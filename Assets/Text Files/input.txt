@@ -1,6 +1,8 @@
 1 spawn Vehicles_PizzaCar P2 -15 10 5
 1 spawn Vehicles_PizzaCar P3 5 10 5 0 90 0 2 2 2
 2 spawn Vehicles_PizzaCar P4
-2 path P4 Path1
-2 animate P4 MGR 1
-5 end
+3 path P4 Path1
+3 animate P4 MGR 1
+5 destroy P2
+7 removeFromPath P4
+10 end

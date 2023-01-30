@@ -23,7 +23,6 @@ public class SceneManip : MonoBehaviour
     public string textPath;
     private int index;
     private Command curCommand;
-    private Scene curScene;
 
     //Creates a new instance of the specified prefab with optional specified transformation values
     int spawn(string command, string[] terms)
@@ -172,9 +171,44 @@ public class SceneManip : MonoBehaviour
             return 1;
         }
         else SceneManager.LoadScene(sceneName: "Empty");
+        
         return 0;
     }
 
+    int destroy(string command, string[] terms)
+    {
+        //Test for minimum terms
+        if(terms.Count() < 3)
+        {
+            Debug.Log("Invalid terms for moving obect with command '" + command + "'");
+            return 1;
+        }
+        else
+        {
+            curObject = GameObject.Find(terms[2]);
+            Destroy(curObject);
+        }
+
+        return 0;
+    }
+    
+    int removeFromPath(string command, string[] terms)
+    {
+        //Test for minimum terms
+        if(terms.Count() < 3)
+        {
+            Debug.Log("Invalid terms for moving obect with command '" + command + "'");
+            return 1;
+        }
+        else
+        {
+            curObject = GameObject.Find(terms[2]);
+            curObject.GetComponent<PathFollower>().pathCreator = null;
+        }
+        
+        return 0;
+    }
+    
     //Determines which command is to be executed
     int execute(string command)
     {
@@ -201,6 +235,12 @@ public class SceneManip : MonoBehaviour
                 break;
             case "end":
                 result = unload(command, terms);
+                break;
+            case "destroy":
+                result = destroy(command, terms);
+                break;
+            case "removeFromPath":
+                result = removeFromPath(command, terms);
                 break;
             default:
                 Debug.Log("Unrecognized command: '" + terms[1] + "'");
