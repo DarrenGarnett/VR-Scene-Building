@@ -26,6 +26,8 @@ namespace PathCreation.Examples
                 //if(followerAnimator) followerAnimator.applyRootMotion = false;
 
                 prevPathOffset = new Vector3(0, 0, 0);
+
+                transform.position = prevPathOffset;
             }
         }
 
@@ -42,46 +44,11 @@ namespace PathCreation.Examples
                 added previously(made of both the path and animation offsets)*/
                 transform.position -= prevPathOffset;
 
-                //add the current offset of the animation to the next point in the path
                 Vector3 pathOffset = transform.position + pathPosition;
-                //Debug.Log(pathOffset);
-                //Debug.Log(prevPathOffset);
 
-                //subtract the current animation offset? is it redundant?
-
-                //I don't know ~_~
                 transform.position += pathOffset;
 
                 prevPathOffset = pathOffset;
-
-                /*
-                Vector3 animationPosition = transform.position;
-                Quaternion animationRotation = transform.rotation;
-                
-                //get animation transformations
-                
-                Quaternion pathRotation = pathCreator.path.GetRotationAtDistance(distanceTravelled, endOfPathInstruction);
-
-                prevPosition = transform.position - pathPosition;
-                //Debug.Log(prevPosition);
-                prevRotation = transform.rotation * Quaternion.Inverse(pathRotation);
-                //Debug.Log(prevRotation);
-
-                distanceTravelled += speed * Time.deltaTime;
-                pathPosition = pathCreator.path.GetPointAtDistance(distanceTravelled, endOfPathInstruction);
-                pathRotation = pathCreator.path.GetRotationAtDistance(distanceTravelled, endOfPathInstruction);
-                
-                //transform.position = pathCreator.path.GetPointAtDistance(distanceTravelled, endOfPathInstruction);
-                //transform.rotation = pathCreator.path.GetRotationAtDistance(distanceTravelled, endOfPathInstruction);
-                
-                //transform.position = pathPosition + prevPosition;
-                //transform.rotation = pathRotation * prevRotation;
-
-                Vector3 positionDisplacement = pathCreator.path.GetPointAtDistance(distanceTravelled, endOfPathInstruction) - pathCreator.transform.position;
-
-                //transform.position = positionDisplacement;
-                //Debug.Log("Update time = " + Time.deltaTime);
-                */
             }
         }
 

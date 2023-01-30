@@ -24,6 +24,13 @@ public class SceneManip : MonoBehaviour
     private int index;
     private Command curCommand;
 
+    int termCheck()
+    {
+
+
+        return -1;
+    }
+
     //Creates a new instance of the specified prefab with optional specified transformation values
     int spawn(string command, string[] terms)
     {
@@ -258,8 +265,22 @@ public class SceneManip : MonoBehaviour
         {
             //Store the contents of the input file
             commands = System.IO.File.ReadAllLines(textPath);
+            string[] lines = commands.Clone() as string[];
 
-            //foreach(string command in commands) Debug.Log(command);
+            int i = 0;
+            foreach(string line in lines)
+            {
+                if(!line.Contains("//"))
+                {
+                    lines[i] = line;
+                    i++;
+                }
+            }
+
+            commands = lines.Clone() as string[];
+
+            //foreach(string command in commands) Debug.Log("Command " + command);
+            //foreach(string line in lines) Debug.Log("Line: " + line);
         }
         else Debug.Log("Could not open file");
     }
