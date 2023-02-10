@@ -26,6 +26,21 @@ public class SceneManip : MonoBehaviour
     private Command curCommand;
     private List<Command> commands = new List<Command>();
 
+    Vector3 changeVec(Vector3 inVec, string[] terms)
+    {
+        string[] component = terms[2].Split('.');
+
+        Vector3 curVec = inVec;
+        if(component.Count() == 3)
+        {
+            if(component[2] == "x") curVec.x = Convert.ToSingle(terms[3]);
+            if(component[2] == "y") curVec.y = Convert.ToSingle(terms[3]);
+            if(component[2] == "z") curVec.z = Convert.ToSingle(terms[3]);
+        }
+        else if(terms.Count() == 6) curVec = new Vector3(Convert.ToSingle(terms[3]), Convert.ToSingle(terms[4]), Convert.ToSingle(terms[5]));
+        return curVec;
+    }
+
     void setTransform(string[] terms)
     {
         string[] component = terms[2].Split('.');
@@ -34,37 +49,13 @@ public class SceneManip : MonoBehaviour
         switch(component[1].ToLower())
         {
             case "position":
-                Vector3 curPos = curObject.transform.position;
-                if(component.Count() == 3)
-                {
-                    if(component[2] == "x") curPos.x = Convert.ToSingle(terms[3]);
-                    if(component[2] == "y") curPos.y = Convert.ToSingle(terms[3]);
-                    if(component[2] == "z") curPos.z = Convert.ToSingle(terms[3]);
-                }
-                else if(terms.Count() == 6) curPos = new Vector3(Convert.ToSingle(terms[3]), Convert.ToSingle(terms[4]), Convert.ToSingle(terms[5]));
-                curObject.transform.position = curPos;
+                curObject.transform.position = changeVec(curObject.transform.position, terms);
                 break;
             case "rotation":
-                Vector3 curRot = curObject.transform.eulerAngles;
-                if(component.Count() == 3)
-                {
-                    if(component[2] == "x") curRot.x = Convert.ToSingle(terms[3]);
-                    if(component[2] == "y") curRot.y = Convert.ToSingle(terms[3]);
-                    if(component[2] == "z") curRot.z = Convert.ToSingle(terms[3]);
-                }
-                else if(terms.Count() == 6) curRot = new Vector3(Convert.ToSingle(terms[3]), Convert.ToSingle(terms[4]), Convert.ToSingle(terms[5]));
-                curObject.transform.eulerAngles = curRot;
+                curObject.transform.eulerAngles = changeVec(curObject.transform.eulerAngles, terms);
                 break;
             case "scale":
-                Vector3 curScl = curObject.transform.localScale;
-                if(component.Count() == 3)
-                {
-                    if(component[2] == "x") curScl.x = Convert.ToSingle(terms[3]);
-                    if(component[2] == "y") curScl.y = Convert.ToSingle(terms[3]);
-                    if(component[2] == "z") curScl.z = Convert.ToSingle(terms[3]);
-                }
-                else if(terms.Count() == 6) curScl = new Vector3(Convert.ToSingle(terms[3]), Convert.ToSingle(terms[4]), Convert.ToSingle(terms[5]));
-                curObject.transform.localScale = curScl;
+                curObject.transform.localScale = changeVec(curObject.transform.localScale, terms);
                 break;
             default:
                 Debug.Log("Invalid transform variable.");
@@ -72,29 +63,73 @@ public class SceneManip : MonoBehaviour
         }
     }
 
-    IEnumerator dynSetTransform(string[] terms)
+    float blend(float percentComplete, float init, float final)
+    {
+        return (percentComplete * (final - init)) + init;
+    }
+
+    Vector3 dynChangeVec(GameObject dynObject, Vector3 inVec, string[] terms, float startTime)
     {
         string[] component = terms[2].Split('.');
+        float duration = Convert.ToSingle(terms[3]);
+
+        float timeSinceStart = Time.time - startTime;
+        float percentComplete = timeSinceStart / duration;
+
+        Vector3 curVec = inVec;
+        if(component.Count() == 3)
+        {
+            if(component[2] == "x") curVec.x = blend(percentComplete, Convert.ToSingle(terms[5]), Convert.ToSingle(terms[7]));
+            if(component[2] == "y") curVec.y = blend(percentComplete, Convert.ToSingle(terms[5]), Convert.ToSingle(terms[7]));
+            if(component[2] == "z") curVec.z = blend(percentComplete, Convert.ToSingle(terms[5]), Convert.ToSingle(terms[7]));
+        }
+        else if(terms.Count() == 12) 
+        {
+            float curX = blend(percentComplete, Convert.ToSingle(terms[5]), Convert.ToSingle(terms[9]));
+            float curY = blend(percentComplete, Convert.ToSingle(terms[6]), Convert.ToSingle(terms[10]));
+            float curZ = blend(percentComplete, Convert.ToSingle(terms[7]), Convert.ToSingle(terms[11]));
+            curVec = new Vector3(curX, curY, curZ);
+        }
+        return curVec;
+    }
+
+    IEnumerator dynSetTransform(string[] terms)
+    {
+        //Debug.Log("Dynamically updating transform...");
+        string[] component = terms[2].Split('.');
         //foreach(string part in component) Debug.Log(part);
+
+        float duration = Convert.ToSingle(terms[3]);
+        float startTime = Time.time;
+        GameObject dynObject = curObject;
 
         switch(component[1].ToLower())
         {
             case "position":
-                Vector3 curPos = curObject.transform.position;
-                if(component.Count() == 3)
+                while(Time.time - startTime < duration)
                 {
-                    if(component[2] == "x") curPos.x = Convert.ToSingle(terms[3]);
-                    if(component[2] == "y") curPos.y = Convert.ToSingle(terms[3]);
-                    if(component[2] == "z") curPos.z = Convert.ToSingle(terms[3]);
+                    dynObject.transform.position = dynChangeVec(dynObject, dynObject.transform.position, terms, startTime);
+                    yield return null;
                 }
-                else if(terms.Count() == 6) curPos = new Vector3(Convert.ToSingle(terms[3]), Convert.ToSingle(terms[4]), Convert.ToSingle(terms[5]));
-                curObject.transform.position = curPos;
+                break;
+            case "rotation":
+                while(Time.time - startTime < duration)
+                {
+                    dynObject.transform.eulerAngles = dynChangeVec(dynObject, dynObject.transform.eulerAngles, terms, startTime);
+                    yield return null;
+                }
+                break;
+            case "scale":
+                while(Time.time - startTime < duration)
+                {
+                    dynObject.transform.localScale = dynChangeVec(dynObject, dynObject.transform.localScale, terms, startTime);
+                    yield return null;
+                }
                 break;
             default:
                 Debug.Log("Invalid transform variable.");
                 break;
         }
-        yield return null;
     }
 
     void setAnimator(string[] terms)
@@ -197,7 +232,7 @@ public class SceneManip : MonoBehaviour
             {
                 //Debug.Log("Valid component: " + component[0]);
                 string cellName = terms[2];
-                if(cellName.Contains("Transform")) dynSetTransform(terms);
+                if(cellName.Contains("Transform")) StartCoroutine(dynSetTransform(terms));
                 return 0;
             }
             else Debug.Log("Can not set value, invalid component name.");
@@ -392,5 +427,6 @@ public class SceneManip : MonoBehaviour
                 index++;
             }
         }
+        //foreach()
     }
 }
