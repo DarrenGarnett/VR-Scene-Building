@@ -8,12 +8,14 @@ namespace PathCreation.Examples
     {
         public PathCreator pathCreator;
         public EndOfPathInstruction endOfPathInstruction;
-        public float speed = 5;
+        public float speed = 100;
         float distanceTravelled;
         Animator followerAnimator;
         Vector3 prevPosition;
         Quaternion prevRotation;
         Vector3 prevPathOffset;
+
+        public float cycleDuration = 1;
 
         void Start()
         {
@@ -28,6 +30,9 @@ namespace PathCreation.Examples
                 prevPathOffset = new Vector3(0, 0, 0);
 
                 transform.position = prevPathOffset;
+
+                //Debug.Log(pathCreator.path.length);
+                //Debug.Log(cycleDuration);
             }
         }
 
@@ -36,7 +41,8 @@ namespace PathCreation.Examples
             if(pathCreator != null)
             {
                 //get next point in the path
-                distanceTravelled += speed * Time.deltaTime;
+                //distanceTravelled += speed * Time.deltaTime;
+                distanceTravelled += pathCreator.path.length * (Time.deltaTime / cycleDuration);
                 Vector3 pathPosition = pathCreator.path.GetPointAtDistance(distanceTravelled, endOfPathInstruction);
                 
                 /*since the current transform has the animation transformations 

@@ -5,6 +5,6 @@
 3 animate P4 MGR 1
 //just a comment
 8 path P3 Path2
-10 destroy P2
-20 removeFromPath P4
+18 destroy P2
+23 removeFromPath P4
 30 end

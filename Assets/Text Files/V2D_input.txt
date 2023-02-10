@@ -1,0 +1,18 @@
+CREATE P1 Vehicles_PizzaCar -5 10
+CREATE P2 Vehicles_PizzaCar 0 10
+CREATE P3 Vehicles_PizzaCar 5 10
+CREATE P4 Vehicles_PizzaCar 10 10
+TIME 1
+DESTROY P1
+MOVE P2 Path3 4
+SETOBJCELL P3 Transform.position 15 15 15
+SETOBJCELL P3 Transform.rotation.y 90
+SETOBJCELL P3 Transform.scale.z 2
+SETOBJCELL P4 Animator MGR
+TIME 4
+DYNUPDATECELL P3 Transform.position.x 4 FROM 15 TO 0
+//Invalid/missing component test
+SETOBJCELL P4 Garbage 2
+TIME 100
+//Don't read this
+END
