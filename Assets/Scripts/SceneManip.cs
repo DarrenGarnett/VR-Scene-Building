@@ -17,6 +17,51 @@ public class Command
     public float time;
 }
 
+public class CommandList
+{
+    public string filename;
+    public string listname;
+    public List<string> referenceList = new List<string>();
+    public List<Command> commands = new List<Command>();
+    
+    public CommandList(string file)
+    {
+        if(File.Exists(file)) 
+        {
+            //Store the contents of the input file
+            string[] input = System.IO.File.ReadAllLines(file);
+
+            //string[] lines = commands.Clone() as string[];
+            List<string> lines = new List<string>();
+
+            foreach(string command in input)
+            {
+                if(!command.Contains("//") && command != "") lines.Add(command);
+            }
+
+            float curTime = 0;
+            foreach(string line in lines)
+            {
+                Command temp = new Command();
+                temp.line = line;
+                temp.args = line.Split(' ');
+
+                if(line.Contains("TIME")) curTime = Convert.ToSingle(temp.args[1]);
+                else if(line.Contains("CALL")) referenceList.Add(temp.args[1] + " " + curTime);
+                else 
+                {
+                    temp.time = curTime;
+                    commands.Add(temp);
+                }
+            }
+
+            //commandList.commands = commandList.commands.OrderBy(n => n.time).ToList();
+            //foreach(Command command in commands) Debug.Log(command.time + " " + command.line);
+        }
+        else Debug.Log("Could not open " + file);
+    }
+}
+
 public class SceneManip : MonoBehaviour
 {
     private GameObject curObject;
@@ -24,7 +69,8 @@ public class SceneManip : MonoBehaviour
     public string textPath;
     private int index = 0;
     private Command curCommand;
-    private List<Command> commands = new List<Command>();
+    //private List<Command> commands = new List<Command>();
+    private CommandList commandList;
 
     Vector3 changeVec(Vector3 inVec, string[] terms)
     {
@@ -38,6 +84,10 @@ public class SceneManip : MonoBehaviour
             if(component[2] == "z") curVec.z = Convert.ToSingle(terms[3]);
         }
         else if(terms.Count() == 6) curVec = new Vector3(Convert.ToSingle(terms[3]), Convert.ToSingle(terms[4]), Convert.ToSingle(terms[5]));
+        else if(terms[2] == "length") curVec.x = Convert.ToSingle(terms[3]);
+        else if(terms[2] == "height") curVec.y = Convert.ToSingle(terms[3]);
+        else if(terms[2] == "width") curVec.z = Convert.ToSingle(terms[3]);
+
         return curVec;
     }
 
@@ -46,20 +96,37 @@ public class SceneManip : MonoBehaviour
         string[] component = terms[2].Split('.');
         //foreach(string part in component) Debug.Log(part);
 
-        switch(component[1].ToLower())
+        if(component.Count() > 1)
         {
-            case "position":
-                curObject.transform.position = changeVec(curObject.transform.position, terms);
-                break;
-            case "rotation":
-                curObject.transform.eulerAngles = changeVec(curObject.transform.eulerAngles, terms);
-                break;
-            case "scale":
-                curObject.transform.localScale = changeVec(curObject.transform.localScale, terms);
-                break;
-            default:
-                Debug.Log("Invalid transform variable.");
-                break;
+            switch(component[1].ToLower())
+            {
+                case "position":
+                    curObject.transform.position = changeVec(curObject.transform.position, terms);
+                    break;
+                case "rotation":
+                    curObject.transform.eulerAngles = changeVec(curObject.transform.eulerAngles, terms);
+                    break;
+                case "scale":
+                    curObject.transform.localScale = changeVec(curObject.transform.localScale, terms);
+                    break;
+                default:
+                    Debug.Log("Invalid transform variable.");
+                    break;
+            }
+        }
+        else
+        {
+            switch(component[0].ToLower())
+            {    
+                case "length":
+                case "width":
+                case "height":
+                    curObject.transform.localScale = changeVec(curObject.transform.localScale, terms);
+                    break;
+                default:
+                    Debug.Log("Invalid transform variable.");
+                    break;
+            }
         }
     }
 
@@ -90,6 +157,11 @@ public class SceneManip : MonoBehaviour
             float curZ = blend(percentComplete, Convert.ToSingle(terms[7]), Convert.ToSingle(terms[11]));
             curVec = new Vector3(curX, curY, curZ);
         }
+        else if(terms[2] == "length") curVec.x = blend(percentComplete, Convert.ToSingle(terms[5]), Convert.ToSingle(terms[7]));
+        else if(terms[2] == "height") curVec.y = blend(percentComplete, Convert.ToSingle(terms[5]), Convert.ToSingle(terms[7]));
+        else if(terms[2] == "width") curVec.z = blend(percentComplete, Convert.ToSingle(terms[5]), Convert.ToSingle(terms[7]));
+        else Debug.Log("Unrecognized transform component(s).");
+        
         return curVec;
     }
 
@@ -103,32 +175,53 @@ public class SceneManip : MonoBehaviour
         float startTime = Time.time;
         GameObject dynObject = curObject;
 
-        switch(component[1].ToLower())
+        if(component.Count() > 1)
         {
-            case "position":
-                while(Time.time - startTime < duration)
-                {
-                    dynObject.transform.position = dynChangeVec(dynObject, dynObject.transform.position, terms, startTime);
-                    yield return null;
-                }
-                break;
-            case "rotation":
-                while(Time.time - startTime < duration)
-                {
-                    dynObject.transform.eulerAngles = dynChangeVec(dynObject, dynObject.transform.eulerAngles, terms, startTime);
-                    yield return null;
-                }
-                break;
-            case "scale":
-                while(Time.time - startTime < duration)
-                {
-                    dynObject.transform.localScale = dynChangeVec(dynObject, dynObject.transform.localScale, terms, startTime);
-                    yield return null;
-                }
-                break;
-            default:
-                Debug.Log("Invalid transform variable.");
-                break;
+            switch(component[1].ToLower())
+            {
+                case "position":
+                    while(Time.time - startTime < duration)
+                    {
+                        dynObject.transform.position = dynChangeVec(dynObject, dynObject.transform.position, terms, startTime);
+                        yield return null;
+                    }
+                    break;
+                case "rotation":
+                    while(Time.time - startTime < duration)
+                    {
+                        dynObject.transform.eulerAngles = dynChangeVec(dynObject, dynObject.transform.eulerAngles, terms, startTime);
+                        yield return null;
+                    }
+                    break;
+                case "scale":
+                    while(Time.time - startTime < duration)
+                    {
+                        dynObject.transform.localScale = dynChangeVec(dynObject, dynObject.transform.localScale, terms, startTime);
+                        yield return null;
+                    }
+                    break;
+                default:
+                    Debug.Log("Invalid transform variable.");
+                    break;
+            }
+        }
+        else
+        {
+            switch(component[0].ToLower())
+            {    
+                case "length":
+                case "width":
+                case "height":
+                    while(Time.time - startTime < duration)
+                    {
+                        dynObject.transform.localScale = dynChangeVec(dynObject, dynObject.transform.localScale, terms, startTime);
+                        yield return null;
+                    }
+                    break;
+                default:
+                    Debug.Log("Invalid transform variable.");
+                    break;
+            }
         }
     }
 
@@ -137,7 +230,40 @@ public class SceneManip : MonoBehaviour
         Animator curAnimator = curObject.GetComponent<Animator>();
         curAnimator.runtimeAnimatorController = Resources.Load("SimpleTownLite/_Demo/" + terms[3]) as RuntimeAnimatorController;
     }
-    
+
+    void setRenderer(string[] terms)
+    {
+        Renderer curRenderer = curObject.GetComponent<Renderer>();
+        Color newColor = curRenderer.material.color;
+        //Debug.Log("Original color: " + newColor);
+        //source: https://answers.unity.com/questions/1016155/standard-material-shader-ignoring-setfloat-propert.html
+        curRenderer.material.SetFloat("_Mode", 2);
+        curRenderer.material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+        curRenderer.material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+        curRenderer.material.SetInt("_ZWrite", 0);
+        curRenderer.material.DisableKeyword("_ALPHATEST_ON");
+        curRenderer.material.EnableKeyword("_ALPHABLEND_ON");
+        curRenderer.material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+        curRenderer.material.renderQueue = 3000;
+
+        string[] component = terms[2].Split('.');
+        string value = component[0].ToLower();
+        //foreach(string part in component) Debug.Log(part);
+
+        if(value == "red") newColor.r = Convert.ToSingle(terms[3]);
+        else if(value == "green") newColor.g = Convert.ToSingle(terms[3]);
+        else if(value == "blue") newColor.b = Convert.ToSingle(terms[3]);
+        else if(value == "alpha" || value == "transparency") 
+        {
+            //curRenderer.material.SetFloat("_Mode", 2);
+            newColor.a = Convert.ToSingle(terms[3]);
+        }
+        else Debug.Log("Invalid renderer variable.");
+
+        //Debug.Log("New color: " + newColor);
+        curRenderer.material.color = newColor;
+    }
+
     //Creates a new instance of the specified prefab with optional specified transformation values
     int create(string[] terms)
     {
@@ -197,14 +323,16 @@ public class SceneManip : MonoBehaviour
             curObject = GameObject.Find(terms[1]);
 
             string[] component = terms[2].Split('.');
+            string cellName = component[0].ToLower();
             
             Component curComponent = curObject.GetComponent(component[0]);
-            if(curComponent != null)
+            if(cellName == "width" || cellName == "length" || cellName == "height") setTransform(terms);
+            else if(cellName == "red" || cellName == "green" || cellName == "blue" || cellName == "alpha" || cellName == "transparency") setRenderer(terms);
+            else if(curComponent != null)
             {
-                //Debug.Log("Valid component: " + component[0]);
-                string cellName = terms[2];
-                if(cellName.Contains("Transform")) setTransform(terms);
-                if(cellName.Contains("Animator")) setAnimator(terms);
+                if(cellName.Contains("transform")) setTransform(terms);
+                if(cellName.Contains("animator")) setAnimator(terms);
+                if(cellName.Contains("renderer")) setRenderer(terms);
                 return 0;
             }
             else Debug.Log("Can not set value, invalid component name.");
@@ -224,15 +352,13 @@ public class SceneManip : MonoBehaviour
             curObject = GameObject.Find(terms[1]);
 
             string[] component = terms[2].Split('.');
-
-            float startTime = Time.time;
+            string cellName = component[0].ToLower();
             
             Component curComponent = curObject.GetComponent(component[0]);
-            if(curComponent != null)
+            if(cellName == "width" || cellName == "length" || cellName == "height") StartCoroutine(dynSetTransform(terms));
+            else if(curComponent != null)
             {
-                //Debug.Log("Valid component: " + component[0]);
-                string cellName = terms[2];
-                if(cellName.Contains("Transform")) StartCoroutine(dynSetTransform(terms));
+                if(cellName.Contains("transform")) StartCoroutine(dynSetTransform(terms));
                 return 0;
             }
             else Debug.Log("Can not set value, invalid component name.");
@@ -374,10 +500,48 @@ public class SceneManip : MonoBehaviour
         }
         return result;
     }
-
+    
     // Start is called before the first frame update
     void Start()
     {
+        //get master list
+        commandList = new CommandList(textPath);
+        //commandList = new CommandList();
+/*
+        List<Command> tempList = commandList.commands.ToList();
+
+        foreach(Command command in commandList.commands)
+        {
+            if(command.args[0] == "CALL")
+            {
+                tempList.Remove(command);
+            }
+        }
+*/
+        //commandList.commands = tempList.ToList();
+        foreach(string fileInfo in commandList.referenceList) 
+        {
+            Debug.Log("Adding " + fileInfo);
+            CommandList reference = new CommandList("Assets/Text Files/" + fileInfo.Split(' ')[0]);
+            float relativeTime = Convert.ToSingle(fileInfo.Split(' ')[1]);
+            foreach(Command cmd in reference.commands)
+            {
+                cmd.time += relativeTime;
+                commandList.commands.Add(cmd);
+            }
+        }
+
+        commandList.commands = commandList.commands.OrderBy(n => n.time).ToList();
+        foreach(Command command in commandList.commands) Debug.Log(command.time + " " + command.line);
+/*
+        int i = 0;
+        while(commandList.commands[i].args[0] == "INCLUDE")
+        {
+            CommandList referenceList = new CommandList(commandList.commands[0].args[1]);
+            //foreach(Command command in referenceList.commands) masterList.commands.Add(command);
+            i++;
+        }
+
         //Ensure that the input file path is correct
         if(File.Exists(textPath)) 
         {
@@ -388,7 +552,7 @@ public class SceneManip : MonoBehaviour
 
             foreach(string command in input)
             {
-                if(!command.Contains("//")) lines.Add(command);
+                if(!command.Contains("//") && command != "") lines.Add(command);
             }
 
             float curTime = 0;
@@ -403,23 +567,24 @@ public class SceneManip : MonoBehaviour
                 else 
                 {
                     temp.time = curTime;
-                    commands.Add(temp);
+                    commandList.commands.Add(temp);
                 }
             }
 
-            commands = commands.OrderBy(n => n.time).ToList();
-            //foreach(Command command in commands) Debug.Log(command.time + " " + command.line);
+            commandList.commands = commandList.commands.OrderBy(n => n.time).ToList();
+            foreach(Command command in commandList.commands) Debug.Log(command.time + " " + command.line);
         }
         else Debug.Log("Could not open file");
+*/
     }
 
     // Update is called once per frame
     void Update()
     {
-        if(index < commands.Count)
+        if(index < commandList.commands.Count)
         {
             //Get the current command
-            curCommand = commands[index];
+            curCommand = commandList.commands[index];
 
             if(Time.time > curCommand.time)
             {
