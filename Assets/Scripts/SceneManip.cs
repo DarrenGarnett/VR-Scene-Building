@@ -16,11 +16,52 @@ public class Command
     public string[] args;
     public float time;
 }
+/*
+public class CommandFile
+{
+    public Dictionary<string, CommandList> functions = new Dictionary<string, CommandList>();
+    public List<string> referenceList = new List<string>();
+    public CommandFile(string file)
+    {
+        if(File.Exists(file)) 
+        {
+            string[] input = System.IO.File.ReadAllLines(file);
 
+            List<string> lines = new List<string>();
+
+            foreach(string line in input)
+            {
+                if(!line.Contains("//") && line != "") lines.Add(command);
+            }
+
+            int curline = 0;
+            while(curline < lines.Count())
+            {
+                CommandList curFunction = new CommandList();
+                bool toNext = 0;
+                
+                while(!toNext)
+                {
+                    if(lines[curline].contains("INCLUDE")) referenceList.Add(temp.args[1]);
+                    else if(lines[curline].Contains("FUNCTION")) referenceList.Add(temp.args[1]);
+                    else if(lines[curline].Contains("END")) toNext = 1;
+                    else 
+                    {
+                        curline++;
+                    }
+                }
+            }
+
+            //commandList.commands = commandList.commands.OrderBy(n => n.time).ToList();
+            //foreach(Command command in commands) Debug.Log(command.time + " " + command.line);
+        }
+        else Debug.Log("Could not open " + file);
+    }
+}
+*/
 public class CommandList
 {
-    public string filename;
-    public string listname;
+    public Dictionary<string, string> functions = new Dictionary<string, string>();
     public List<string> referenceList = new List<string>();
     public List<Command> commands = new List<Command>();
     
@@ -28,10 +69,8 @@ public class CommandList
     {
         if(File.Exists(file)) 
         {
-            //Store the contents of the input file
             string[] input = System.IO.File.ReadAllLines(file);
 
-            //string[] lines = commands.Clone() as string[];
             List<string> lines = new List<string>();
 
             foreach(string command in input)
@@ -40,23 +79,36 @@ public class CommandList
             }
 
             float curTime = 0;
+            int curLine = 0, startLine = 0;
             foreach(string line in lines)
             {
                 Command temp = new Command();
                 temp.line = line;
                 temp.args = line.Split(' ');
+                
 
                 if(line.Contains("TIME")) curTime = Convert.ToSingle(temp.args[1]);
-                else if(line.Contains("CALL")) referenceList.Add(temp.args[1] + " " + curTime);
+                else if(line.Contains("INCLUDE")) referenceList.Add(temp.args[1]);
+                else if(line.Contains("FUNCTION")) 
+                {
+                    startLine = curLine;
+                }
+                else if(line.Contains("END")) 
+                {
+                    functions.Add(temp.args[1], startLine.ToString() + "-" + curLine.ToString());
+                    curTime = 0;
+                }
                 else 
                 {
                     temp.time = curTime;
                     commands.Add(temp);
+                    curLine++;
                 }
             }
 
             //commandList.commands = commandList.commands.OrderBy(n => n.time).ToList();
             //foreach(Command command in commands) Debug.Log(command.time + " " + command.line);
+            //foreach(KeyValuePair<string, string> kvp in functions) Debug.Log("Function name: " + kvp.Key + "\nFuntion bounds: " + kvp.Value);
         }
         else Debug.Log("Could not open " + file);
     }
@@ -519,17 +571,48 @@ public class SceneManip : MonoBehaviour
         }
 */
         //commandList.commands = tempList.ToList();
+        CommandList temp = new CommandList(textPath);
         foreach(string fileInfo in commandList.referenceList) 
         {
-            Debug.Log("Adding " + fileInfo);
-            CommandList reference = new CommandList("Assets/Text Files/" + fileInfo.Split(' ')[0]);
-            float relativeTime = Convert.ToSingle(fileInfo.Split(' ')[1]);
-            foreach(Command cmd in reference.commands)
+            //Debug.Log("Adding " + fileInfo);
+            CommandList reference = new CommandList("Assets/Text Files/" + fileInfo);
+            //float relativeTime = Convert.ToSingle(fileInfo.Split(' ')[1]);
+            int curCmd = 0;
+            foreach(Command cmd in commandList.commands)
             {
-                cmd.time += relativeTime;
-                commandList.commands.Add(cmd);
+                if(cmd.line.Contains("CALL"))
+                {
+                    if(reference.functions.ContainsKey(cmd.args[1])) 
+                    {
+                        //Debug.Log(fileInfo + ": " + cmd.args[1] + " found.");
+                        //temp.commands.RemoveAt(curCmd);
+                        //temp.commands.RemoveAt(0);
+                        
+                        string bounds = reference.functions[cmd.args[1]];
+                        int lower = Convert.ToInt32(bounds.Split('-')[0]);
+                        int upper = Convert.ToInt32(bounds.Split('-')[1]);
+                        int i;
+                        for(i = lower; i < upper; i++)
+                        {
+                            reference.commands[i].time += cmd.time;
+                            temp.commands.Add(reference.commands[i]);
+                        }
+                        
+                        temp.commands.RemoveAt(curCmd);
+                        Debug.Log("Removing at index " + curCmd);
+                        //curCmd += i;
+                    }
+                    else Debug.Log(cmd.args[1] + " not found in " + fileInfo);
+                }
+                else curCmd++;
+                //cmd.time += relativeTime;
+                //commandList.commands.Add(cmd);
             }
         }
+
+
+        //foreach(Command command in temp.commands) Debug.Log("Temp: " + command.time + " " + command.line);
+        commandList = temp;
 
         commandList.commands = commandList.commands.OrderBy(n => n.time).ToList();
         foreach(Command command in commandList.commands) Debug.Log(command.time + " " + command.line);

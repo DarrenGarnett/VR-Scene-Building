@@ -1,1 +1,10 @@
+INCLUDE AnotherReference.txt
+
+FUNCTION createCar
 CREATE P5 Vehicles_PizzaCar 15 10
+CREATE P6 Vehicles_PizzaCar 20 10
+END createCar
+
+FUNCTION moveCar
+DYNUPDATECELL P5 Transform.position.x 1 FROM 15 TO 0
+END moveCar

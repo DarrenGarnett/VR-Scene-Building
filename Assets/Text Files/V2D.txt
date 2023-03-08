@@ -1,3 +1,6 @@
+INCLUDE Reference.txt
+
+FUNCTION test
 CREATE P1 Vehicles_PizzaCar -5 10
 CREATE P2 Vehicles_PizzaCar 0 10
 CREATE P3 Vehicles_PizzaCar 5 10
@@ -6,10 +9,11 @@ TIME 1
 SETOBJCELL P1 length 4
 SETOBJCELL P4 red 0
 SETOBJCELL P4 alpha 0.4
+CALL createCar
 TIME 2
 DYNUPDATECELL P1 length 1 FROM 4 TO 8
-TIME 8
-CALL Reference.txt
+TIME 4
+CALL moveCar
 TIME 100
 //Don't read this
-END
+END test
