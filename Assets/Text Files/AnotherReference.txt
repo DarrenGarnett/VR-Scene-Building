@@ -1,3 +1,6 @@
+INCLUDE Reference.txt
+
 FUNCTION pathCar
+CALL resetCar
 MOVE P5 Path3 1
 END pathCar

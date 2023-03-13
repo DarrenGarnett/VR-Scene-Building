@@ -17,3 +17,7 @@ CALL moveCar
 TIME 100
 //Don't read this
 END test
+
+FUNCTION no
+ERROR
+END no

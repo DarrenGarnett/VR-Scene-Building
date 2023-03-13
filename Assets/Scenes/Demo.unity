@@ -1378,6 +1378,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   textPath: Assets/Text Files/V2D.txt
+  mainFunction: test
 --- !u!4 &1655681583
 Transform:
   m_ObjectHideFlags: 0

@@ -16,49 +16,7 @@ public class Command
     public string[] args;
     public float time;
 }
-/*
-public class CommandFile
-{
-    public Dictionary<string, CommandList> functions = new Dictionary<string, CommandList>();
-    public List<string> referenceList = new List<string>();
-    public CommandFile(string file)
-    {
-        if(File.Exists(file)) 
-        {
-            string[] input = System.IO.File.ReadAllLines(file);
 
-            List<string> lines = new List<string>();
-
-            foreach(string line in input)
-            {
-                if(!line.Contains("//") && line != "") lines.Add(command);
-            }
-
-            int curline = 0;
-            while(curline < lines.Count())
-            {
-                CommandList curFunction = new CommandList();
-                bool toNext = 0;
-                
-                while(!toNext)
-                {
-                    if(lines[curline].contains("INCLUDE")) referenceList.Add(temp.args[1]);
-                    else if(lines[curline].Contains("FUNCTION")) referenceList.Add(temp.args[1]);
-                    else if(lines[curline].Contains("END")) toNext = 1;
-                    else 
-                    {
-                        curline++;
-                    }
-                }
-            }
-
-            //commandList.commands = commandList.commands.OrderBy(n => n.time).ToList();
-            //foreach(Command command in commands) Debug.Log(command.time + " " + command.line);
-        }
-        else Debug.Log("Could not open " + file);
-    }
-}
-*/
 public class CommandList
 {
     public Dictionary<string, string> functions = new Dictionary<string, string>();
@@ -123,6 +81,7 @@ public class SceneManip : MonoBehaviour
     private Command curCommand;
     //private List<Command> commands = new List<Command>();
     private CommandList commandList;
+    public string mainFunction;
 
     Vector3 changeVec(Vector3 inVec, string[] terms)
     {
@@ -556,109 +515,94 @@ public class SceneManip : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        //get master list
+        //get list for entire input file
         commandList = new CommandList(textPath);
-        //commandList = new CommandList();
-/*
-        List<Command> tempList = commandList.commands.ToList();
 
-        foreach(Command command in commandList.commands)
-        {
-            if(command.args[0] == "CALL")
-            {
-                tempList.Remove(command);
-            }
-        }
-*/
-        //commandList.commands = tempList.ToList();
+        //initial list copy for reference
         CommandList temp = new CommandList(textPath);
-        foreach(string fileInfo in commandList.referenceList) 
+
+        //add called function lines to the main list
+        getReferenceFunctions(temp, mainFunction, 0);
+
+        int linesRemoved = 0;
+        string bounds = commandList.functions[mainFunction];
+        Debug.Log("Building " + mainFunction + ", bounds: " + bounds);
+        int lower = Convert.ToInt32(bounds.Split('-')[0]);
+        int upper = Convert.ToInt32(bounds.Split('-')[1]);
+        
+        //remove lines outside of main function and call lines
+        for(int i = 0; i < temp.commands.Count(); i++)
         {
-            //Debug.Log("Adding " + fileInfo);
-            CommandList reference = new CommandList("Assets/Text Files/" + fileInfo);
-            //float relativeTime = Convert.ToSingle(fileInfo.Split(' ')[1]);
-            int curCmd = 0;
-            foreach(Command cmd in commandList.commands)
+            if(i >= lower && i < upper)
             {
-                if(cmd.line.Contains("CALL"))
+                Command curCommand = temp.commands[i];
+                if(temp.commands[i].line.Contains("CALL")) 
                 {
-                    if(reference.functions.ContainsKey(cmd.args[1])) 
-                    {
-                        //Debug.Log(fileInfo + ": " + cmd.args[1] + " found.");
-                        //temp.commands.RemoveAt(curCmd);
-                        //temp.commands.RemoveAt(0);
-                        
-                        string bounds = reference.functions[cmd.args[1]];
-                        int lower = Convert.ToInt32(bounds.Split('-')[0]);
-                        int upper = Convert.ToInt32(bounds.Split('-')[1]);
-                        int i;
-                        for(i = lower; i < upper; i++)
-                        {
-                            reference.commands[i].time += cmd.time;
-                            temp.commands.Add(reference.commands[i]);
-                        }
-                        
-                        temp.commands.RemoveAt(curCmd);
-                        Debug.Log("Removing at index " + curCmd);
-                        //curCmd += i;
-                    }
-                    else Debug.Log(cmd.args[1] + " not found in " + fileInfo);
+                    //Debug.Log("Removing " + commandList.commands[i - linesRemoved].line);
+                    commandList.commands.RemoveAt(i - linesRemoved);
+                    linesRemoved++;
                 }
-                else curCmd++;
-                //cmd.time += relativeTime;
-                //commandList.commands.Add(cmd);
             }
-        }
-
-
-        //foreach(Command command in temp.commands) Debug.Log("Temp: " + command.time + " " + command.line);
-        commandList = temp;
+            else 
+            {
+                commandList.commands.RemoveAt(i - linesRemoved);
+                linesRemoved++;
+            }
+        }        
 
         commandList.commands = commandList.commands.OrderBy(n => n.time).ToList();
         foreach(Command command in commandList.commands) Debug.Log(command.time + " " + command.line);
-/*
-        int i = 0;
-        while(commandList.commands[i].args[0] == "INCLUDE")
+    }
+
+    void getReferenceFunctions(CommandList curList, string functionName, float curTime)
+    {
+        string bounds = curList.functions[functionName];
+        //Debug.Log(bounds);
+        int lower = Convert.ToInt32(bounds.Split('-')[0]);
+        int upper = Convert.ToInt32(bounds.Split('-')[1]);
+        int i;
+        for(i = lower; i < upper; i++)
         {
-            CommandList referenceList = new CommandList(commandList.commands[0].args[1]);
-            //foreach(Command command in referenceList.commands) masterList.commands.Add(command);
-            i++;
-        }
+            Command curCommand = curList.commands[i];
+            //Debug.Log(i + ": " + curCommand.line);
 
-        //Ensure that the input file path is correct
-        if(File.Exists(textPath)) 
-        {
-            //Store the contents of the input file
-            string[] input = System.IO.File.ReadAllLines(textPath);
-            //string[] lines = commands.Clone() as string[];
-            List<string> lines = new List<string>();
-
-            foreach(string command in input)
+            if(curCommand.line.Contains("CALL"))
             {
-                if(!command.Contains("//") && command != "") lines.Add(command);
-            }
-
-            float curTime = 0;
-            foreach(string line in lines)
-            {
-                Command temp = new Command();
-                temp.line = line;
-                temp.args = line.Split(' ');
-
-                
-                if(line.Contains("TIME")) curTime = Convert.ToSingle(temp.args[1]);
-                else 
+                //Debug.Log(curCommand.line + " in curList...");
+                foreach(string fileInfo in curList.referenceList)
                 {
-                    temp.time = curTime;
-                    commandList.commands.Add(temp);
+                    CommandList reference = new CommandList("Assets/Text Files/" + fileInfo);
+                    //Debug.Log("Opening " + fileInfo + " for referencing...");
+
+                    if(reference.functions.ContainsKey(curCommand.args[1]))
+                    {
+                        //Debug.Log("Getting reference lines...");
+                        string refBounds = reference.functions[curCommand.args[1]];
+                        //Debug.Log(refBounds);
+                        int refLower = Convert.ToInt32(refBounds.Split('-')[0]);
+                        int refUpper = Convert.ToInt32(refBounds.Split('-')[1]);
+                        for(int j = refLower; j < refUpper; j++)
+                        {
+                            Command refCommand = reference.commands[j];
+                            //Debug.Log(j + ": " + refCommand.line);
+
+                            if(refCommand.line.Contains("CALL")) 
+                            {
+                                //Debug.Log("Recurse");
+                                getReferenceFunctions(reference, curCommand.args[1], curCommand.time + curTime);
+                            }
+                            else 
+                            {
+                                refCommand.time += curTime + curCommand.time;
+                                //Debug.Log("Adding " + refCommand.time + " " + refCommand.line);
+                                commandList.commands.Add(refCommand);
+                            }
+                        }
+                    }
+                    else Debug.Log("Invalid function name.");
                 }
             }
-
-            commandList.commands = commandList.commands.OrderBy(n => n.time).ToList();
-            foreach(Command command in commandList.commands) Debug.Log(command.time + " " + command.line);
         }
-        else Debug.Log("Could not open file");
-*/
     }
 
     // Update is called once per frame
@@ -675,6 +619,5 @@ public class SceneManip : MonoBehaviour
                 index++;
             }
         }
-        //foreach()
     }
 }
