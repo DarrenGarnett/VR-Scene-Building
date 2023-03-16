@@ -418,7 +418,7 @@ public class SceneManip : MonoBehaviour
             curFollower.pathCreator = curCreator;
 
             //Set cycle duration
-            curFollower.cycleDuration = Convert.ToSingle(terms[3]);
+            // curFollower.cycleDuration = Convert.ToSingle(terms[3]);
 
             curFollower.endOfPathInstruction = EndOfPathInstruction.Stop;
         }
