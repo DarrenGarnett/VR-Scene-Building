@@ -2452,7 +2452,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1322851740
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2465,7 +2465,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e94315d29472f7941bd5a237126e90c7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  positionSlider: {fileID: 1467188942}
 --- !u!4 &1322851741
 Transform:
   m_ObjectHideFlags: 0
@@ -2857,6 +2856,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1467188941}
   - component: {fileID: 1467188942}
+  - component: {fileID: 1467188943}
   m_Layer: 5
   m_Name: Path Position Slider
   m_TagString: Untagged
@@ -2937,6 +2937,18 @@ MonoBehaviour:
   m_OnValueChanged:
     m_PersistentCalls:
       m_Calls: []
+--- !u!114 &1467188943
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1467188940}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e94315d29472f7941bd5a237126e90c7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1478844012
 GameObject:
   m_ObjectHideFlags: 0
@@ -4425,7 +4437,7 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1322851740}
+      - m_Target: {fileID: 1467188943}
         m_TargetAssemblyTypeName: GlobalTimeScript, Assembly-CSharp
         m_MethodName: ResetTime
         m_Mode: 1
