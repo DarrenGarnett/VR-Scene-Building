@@ -18,9 +18,9 @@ public class GlobalTimeScript : MonoBehaviour, IPointerDownHandler, IPointerUpHa
     // Start is called before the first frame update
     void Start()
     {
-        currTime = 0f;
+        prevTime = 0f;
         positionSlider.maxValue = runtime;
-        positionSlider.value = 0f;
+        positionSlider.value = Time.deltaTime;
         isBeingControlledByUser = false;
     }
 
@@ -29,7 +29,11 @@ public class GlobalTimeScript : MonoBehaviour, IPointerDownHandler, IPointerUpHa
     {
         if(currTime < runtime && !PauseScript.paused && !isBeingControlledByUser)
         {
-            
+            currTime = positionSlider.value;
+            deltaTime = currTime - prevTime;
+            prevTime = currTime;
+            currTime += Time.deltaTime;
+            positionSlider.value = currTime;
         }
     }
 
