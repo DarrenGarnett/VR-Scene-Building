@@ -4,7 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
 
-public class GlobalTimeScript : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
+public class GlobalTimeScript : MonoBehaviour, IPointerClickHandler, IPointerUpHandler
 {
     public static float deltaTime;
     private float currTime;
@@ -27,17 +27,21 @@ public class GlobalTimeScript : MonoBehaviour, IPointerDownHandler, IPointerUpHa
     // Update is called once per frame
     void Update()
     {
-        if(currTime < runtime && !PauseScript.paused && !isBeingControlledByUser)
+        if(currTime >= runtime)
+        {
+            ResetTime();
+        }
+        else if(!PauseScript.paused && !isBeingControlledByUser)
         {
             currTime = positionSlider.value;
             deltaTime = currTime - prevTime;
             prevTime = currTime;
             currTime += Time.deltaTime;
-            positionSlider.value = currTime;
+            positionSlider.SetValueWithoutNotify(currTime);
         }
     }
 
-    void IPointerDownHandler.OnPointerDown(PointerEventData eventData)
+    void IPointerClickHandler.OnPointerClick(PointerEventData eventData)
     {
         isBeingControlledByUser = true;
     }
@@ -49,6 +53,7 @@ public class GlobalTimeScript : MonoBehaviour, IPointerDownHandler, IPointerUpHa
 
     public void ResetTime()
     {
-        currTime = 0f;
+        positionSlider.value = 0;
+        currTime = 0;
     }
 }
