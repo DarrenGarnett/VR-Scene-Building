@@ -386,7 +386,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 100008, guid: fdf198beaeb6dc0478fc1a23628dd236, type: 3}
       propertyPath: m_TagString
-      value: Player
+      value: Untagged
       objectReference: {fileID: 0}
     - target: {fileID: 400008, guid: fdf198beaeb6dc0478fc1a23628dd236, type: 3}
       propertyPath: m_RootOrder
@@ -1034,6 +1034,10 @@ PrefabInstance:
     - target: {fileID: 100008, guid: 1989787f5d4f08647a723f7cb7df5f05, type: 3}
       propertyPath: m_Name
       value: Car
+      objectReference: {fileID: 0}
+    - target: {fileID: 100008, guid: 1989787f5d4f08647a723f7cb7df5f05, type: 3}
+      propertyPath: m_TagString
+      value: Player
       objectReference: {fileID: 0}
     - target: {fileID: 400008, guid: 1989787f5d4f08647a723f7cb7df5f05, type: 3}
       propertyPath: m_RootOrder
@@ -1983,7 +1987,7 @@ MonoBehaviour:
       - 0
       globalNormalsAngle: 0
       flipNormals: 0
-    vertexPathUpToDate: 0
+    vertexPathUpToDate: 1
     vertexPathMaxAngleError: 0.3
     vertexPathMinVertexSpacing: 0.01
     showTransformTool: 1
@@ -2124,6 +2128,7 @@ MonoBehaviour:
   currTime: 0
   prevTime: 0
   isBeingControlledByUser: 0
+  timeChanged: 0
 --- !u!1001 &751556768
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2422,7 +2427,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 915768648}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 361f363643e7bf54dbbcb598355af673, type: 3}
   m_Name: 
@@ -3935,6 +3940,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 701c17417c0146f478ae5fd636a033e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  models: []
   mainCamera: {fileID: 1186333280}
   followCamera: {fileID: 1404916464}
 --- !u!1 &1464941866
@@ -4871,6 +4877,7 @@ MonoBehaviour:
   currTime: 0
   prevTime: 0
   isBeingControlledByUser: 0
+  timeChanged: 0
 --- !u!1001 &1938853072
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -209,21 +209,21 @@ public class SceneManip : MonoBehaviour
                 case "position":
                     while(globalTime.currTime - startTime < duration)
                     {
-                        dynObject.transform.position = dynChangeVec(dynObject, dynObject.transform.position, terms, startTime);
+                        if(dynObject != null) dynObject.transform.position = dynChangeVec(dynObject, dynObject.transform.position, terms, startTime);
                         yield return null;
                     }
                     break;
                 case "rotation":
                     while(globalTime.currTime - startTime < duration)
                     {
-                        dynObject.transform.eulerAngles = dynChangeVec(dynObject, dynObject.transform.eulerAngles, terms, startTime);
+                        if(dynObject != null) dynObject.transform.eulerAngles = dynChangeVec(dynObject, dynObject.transform.eulerAngles, terms, startTime);
                         yield return null;
                     }
                     break;
                 case "scale":
                     while(globalTime.currTime - startTime < duration)
                     {
-                        dynObject.transform.localScale = dynChangeVec(dynObject, dynObject.transform.localScale, terms, startTime);
+                        if(dynObject != null) dynObject.transform.localScale = dynChangeVec(dynObject, dynObject.transform.localScale, terms, startTime);
                         yield return null;
                     }
                     break;
@@ -241,7 +241,7 @@ public class SceneManip : MonoBehaviour
                 case "height":
                     while(globalTime.currTime - startTime < duration)
                     {
-                        dynObject.transform.localScale = dynChangeVec(dynObject, dynObject.transform.localScale, terms, startTime);
+                        if(dynObject != null) dynObject.transform.localScale = dynChangeVec(dynObject, dynObject.transform.localScale, terms, startTime);
                         yield return null;
                     }
                     break;
@@ -321,16 +321,19 @@ public class SceneManip : MonoBehaviour
             float timeSinceStart = globalTime.currTime - startTime;
             float percentComplete = timeSinceStart / duration;
 
-            newColor = curRenderer.material.color;
+            if(curRenderer != null) 
+            {
+                newColor = curRenderer.material.color;
 
-            if(value == "red") newColor.r = blend(percentComplete, Convert.ToSingle(terms[5]), Convert.ToSingle(terms[7]));
-            else if(value == "green") newColor.g = blend(percentComplete, Convert.ToSingle(terms[5]), Convert.ToSingle(terms[7]));
-            else if(value == "blue") newColor.b = blend(percentComplete, Convert.ToSingle(terms[5]), Convert.ToSingle(terms[7]));
-            else if(value == "alpha" || value == "transparency") newColor.a = blend(percentComplete, Convert.ToSingle(terms[5]), Convert.ToSingle(terms[7]));
-            else Debug.Log("Invalid renderer variable.");
+                if(value == "red") newColor.r = blend(percentComplete, Convert.ToSingle(terms[5]), Convert.ToSingle(terms[7]));
+                else if(value == "green") newColor.g = blend(percentComplete, Convert.ToSingle(terms[5]), Convert.ToSingle(terms[7]));
+                else if(value == "blue") newColor.b = blend(percentComplete, Convert.ToSingle(terms[5]), Convert.ToSingle(terms[7]));
+                else if(value == "alpha" || value == "transparency") newColor.a = blend(percentComplete, Convert.ToSingle(terms[5]), Convert.ToSingle(terms[7]));
+                else Debug.Log("Invalid renderer variable.");
 
-            //Debug.Log("New color: " + newColor);
-            curRenderer.material.color = newColor;
+                //Debug.Log("New color: " + newColor);
+                curRenderer.material.color = newColor;
+            }
 
             yield return null;
         }
@@ -463,6 +466,7 @@ public class SceneManip : MonoBehaviour
     int path(string[] terms)
     {
         GameObject pathObject = new GameObject(terms[1]);
+        pathObject.tag = "Player";
 
         pathObject.AddComponent<PathCreator>();
         PathCreator pathCreator = pathObject.GetComponent<PathCreator>() as PathCreator;
@@ -604,7 +608,7 @@ public class SceneManip : MonoBehaviour
         }
         return result;
     }
-    
+
     // Start is called before the first frame update
     void Start()
     {
@@ -651,6 +655,9 @@ public class SceneManip : MonoBehaviour
         //Debug.Log("________________________________________");
 
         //Debug.Log("0: " + commandList.getIndexAtTime(0) + "| 1500: " + commandList.getIndexAtTime(1500f));
+
+        //GlobalTimeScript.runtime = commandList.commands[commandList.commands.Count - 1].time;
+        globalTime.ResetSlider(commandList.commands[commandList.commands.Count - 1].time);
     }
 
     void getReferenceFunctions(CommandList curList, string functionName, float curTime)
@@ -707,10 +714,32 @@ public class SceneManip : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //globalTime.deltaTime;
-        //Debug.Log(globalTime.currTime);
         if(!globalTime.isBeingControlledByUser)
         {
+            if(globalTime.timeChanged)
+            {
+                Debug.Log("Time change detected.");
+                if(PauseScript.paused) pauseTime.PauseFunction();
+
+                //clear created objects
+                GameObject[] createdObjects = GameObject.FindGameObjectsWithTag("Player");
+                foreach(GameObject obj in createdObjects) 
+                {
+                    Debug.Log("Deleting " + obj.name);
+                    if(obj != null) Destroy(obj);
+                }
+
+                //execute commands up to current index
+                index = commandList.getIndexAtTime(globalTime.currTime);
+                for(int i = 0; i < index; i++)
+                {
+                    curCommand = commandList.commands[i];
+                    if(curCommand.args[0] != "PAUSE") execute(curCommand.line, curCommand.args);
+                }
+
+                globalTime.timeChanged = false;
+            }
+
             if(index < commandList.commands.Count)
             {
                 //Get the current command
@@ -723,6 +752,13 @@ public class SceneManip : MonoBehaviour
                     index++;
                 }
             }
+        }
+        else 
+        {
+            //Debug.Log("Slider in use...");
+            //difference = index - commandList.getIndexAtTime(globalTime.currTime);
+            //index = commandList.getIndexAtTime(globalTime.currTime);
+            //timeChanged = true;
         }
     }
 }

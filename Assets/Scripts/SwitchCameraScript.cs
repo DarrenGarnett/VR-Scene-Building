@@ -8,7 +8,9 @@ public class SwitchCameraScript : MonoBehaviour
     bool mainCameraActive;
 
     // List of all models on paths
-    GameObject[] models;
+    public List<GameObject> models = new List<GameObject>();
+
+    private int size = 0;
 
     // Int to track position in models list
     int modelsIdx;
@@ -24,7 +26,11 @@ public class SwitchCameraScript : MonoBehaviour
         mainCameraActive = true;
         mainCamera.enabled = true;
         followCamera.enabled = false;
-        models = GameObject.FindGameObjectsWithTag("Player");
+
+        GameObject[] modelsArray = GameObject.FindGameObjectsWithTag("Player");
+        foreach(GameObject obj in modelsArray) models.Add(obj);
+        size = models.Count;
+
         mainCameraControls = GameObject.FindGameObjectWithTag("MainCameraMovement");
         modelsIdx = 0;
         CameraFollow.target = models[modelsIdx].transform;
@@ -32,7 +38,14 @@ public class SwitchCameraScript : MonoBehaviour
 
     private void Update()
     {
-        models = GameObject.FindGameObjectsWithTag("Player");
+        GameObject[] modelsArray = GameObject.FindGameObjectsWithTag("Player");
+        if(size != modelsArray.Length)
+        {
+            //Debug.Log("Models size changed.");
+            models.Clear();
+            foreach(GameObject obj in modelsArray) models.Add(obj);
+            size = models.Count;
+        }
     }
 
     public void ChangeCamera()
@@ -56,7 +69,8 @@ public class SwitchCameraScript : MonoBehaviour
          * set modelIdx to 0, deactivate followCamera, and activate mainCamera
          * also show the main camera controls
          */
-        else if(modelsIdx == models.Length - 1)
+        //else if(modelsIdx == models.Length - 1)
+        else if(modelsIdx == size - 1)
         {
             modelsIdx = 0;
             followCamera.enabled = false;

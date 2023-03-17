@@ -12,6 +12,7 @@ public class GlobalTimeScript : MonoBehaviour, IPointerDownHandler, IPointerUpHa
     public static float runtime = 50f;
 
     public bool isBeingControlledByUser;
+    public bool timeChanged;
 
     private Slider positionSlider;
 
@@ -24,13 +25,14 @@ public class GlobalTimeScript : MonoBehaviour, IPointerDownHandler, IPointerUpHa
         positionSlider.maxValue = runtime;
         positionSlider.value = Time.deltaTime;
         isBeingControlledByUser = false;
+        timeChanged = false;
     }
 
     // Update is called once per frame
     void Update()
     {
         if(currTime >= runtime) ResetTime();
-        else if(!PauseScript.paused)
+        else if(!PauseScript.paused && !isBeingControlledByUser)
         {
             currTime = positionSlider.value;
             deltaTime = currTime - prevTime;
@@ -51,10 +53,18 @@ public class GlobalTimeScript : MonoBehaviour, IPointerDownHandler, IPointerUpHa
     {
         //Debug.Log("Slider change stopped...");
         isBeingControlledByUser = false;
+        timeChanged = true;
     }
 
     public void ResetTime()
     {
         currTime = 0f;
+    }
+
+    public void ResetSlider(float max)
+    {
+        runtime = max;
+        positionSlider.maxValue = max;
+        positionSlider.value = 0;
     }
 }
