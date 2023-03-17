@@ -38,7 +38,7 @@ namespace PathCreation.Examples
 
         void Update()
         {
-            if(pathCreator != null)
+            if(pathCreator != null && !PauseScript.paused)
             {
                 //get next point in the path
                 //distanceTravelled += speed * Time.deltaTime;

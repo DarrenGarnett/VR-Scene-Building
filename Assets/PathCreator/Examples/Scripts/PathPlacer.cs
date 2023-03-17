@@ -14,6 +14,7 @@ namespace PathCreation.Examples {
 
         void Generate () {
             if (pathCreator != null && prefab != null && holder != null) {
+                Debug.Log("pathCreator, prefab, and holder not null.");
                 DestroyObjects ();
 
                 VertexPath path = pathCreator.path;

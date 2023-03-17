@@ -1,0 +1,4 @@
+FUNCTION DEMO
+CREATE Car CarPrefabName 0 0 0
+CREATE Dummy DummyPrefabName -10 0 0
+TIME 1

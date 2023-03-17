@@ -339,7 +339,7 @@ GameObject:
   - component: {fileID: -4627381018854534049}
   m_Layer: 0
   m_Name: Vehicles_PizzaCar
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -445,3 +445,4 @@ MonoBehaviour:
   pathCreator: {fileID: 0}
   endOfPathInstruction: 0
   speed: 5
+  cycleDuration: 1

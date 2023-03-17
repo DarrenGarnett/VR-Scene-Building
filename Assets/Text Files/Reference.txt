@@ -1,8 +1,8 @@
 INCLUDE AnotherReference.txt
 
 FUNCTION createCar
-CREATE P5 Vehicles_PizzaCar 15 10
-CREATE P6 Vehicles_PizzaCar 20 10
+CREATE P5 Vehicles_PizzaCar 15 10 0
+CREATE P6 Vehicles_PizzaCar 20 10 0
 END createCar
 
 FUNCTION moveCar

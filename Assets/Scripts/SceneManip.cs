@@ -70,10 +70,24 @@ public class CommandList
         }
         else Debug.Log("Could not open " + file);
     }
+
+    public int getIndexAtTime(float time)
+    {
+        int index = 0;
+
+        foreach(Command command in commands)
+        {
+            if(command.time < time) index++;
+        }
+        
+        return index;
+    }
 }
 
 public class SceneManip : MonoBehaviour
 {
+    public GlobalTimeScript globalTime;
+    public PauseScript pauseTime;
     private GameObject curObject;
     //private string[] commands;
     public string textPath;
@@ -151,7 +165,8 @@ public class SceneManip : MonoBehaviour
         string[] component = terms[2].Split('.');
         float duration = Convert.ToSingle(terms[3]);
 
-        float timeSinceStart = Time.time - startTime;
+        //float timeSinceStart = Time.time - startTime;
+        float timeSinceStart = globalTime.currTime - startTime;
         float percentComplete = timeSinceStart / duration;
 
         Vector3 curVec = inVec;
@@ -183,7 +198,8 @@ public class SceneManip : MonoBehaviour
         //foreach(string part in component) Debug.Log(part);
 
         float duration = Convert.ToSingle(terms[3]);
-        float startTime = Time.time;
+        //float startTime = Time.time;
+        float startTime = globalTime.currTime;
         GameObject dynObject = curObject;
 
         if(component.Count() > 1)
@@ -191,21 +207,21 @@ public class SceneManip : MonoBehaviour
             switch(component[1].ToLower())
             {
                 case "position":
-                    while(Time.time - startTime < duration)
+                    while(globalTime.currTime - startTime < duration)
                     {
                         dynObject.transform.position = dynChangeVec(dynObject, dynObject.transform.position, terms, startTime);
                         yield return null;
                     }
                     break;
                 case "rotation":
-                    while(Time.time - startTime < duration)
+                    while(globalTime.currTime - startTime < duration)
                     {
                         dynObject.transform.eulerAngles = dynChangeVec(dynObject, dynObject.transform.eulerAngles, terms, startTime);
                         yield return null;
                     }
                     break;
                 case "scale":
-                    while(Time.time - startTime < duration)
+                    while(globalTime.currTime - startTime < duration)
                     {
                         dynObject.transform.localScale = dynChangeVec(dynObject, dynObject.transform.localScale, terms, startTime);
                         yield return null;
@@ -223,7 +239,7 @@ public class SceneManip : MonoBehaviour
                 case "length":
                 case "width":
                 case "height":
-                    while(Time.time - startTime < duration)
+                    while(globalTime.currTime - startTime < duration)
                     {
                         dynObject.transform.localScale = dynChangeVec(dynObject, dynObject.transform.localScale, terms, startTime);
                         yield return null;
@@ -238,8 +254,10 @@ public class SceneManip : MonoBehaviour
 
     void setAnimator(string[] terms)
     {            
+        curObject.AddComponent<AnimationHandler>();
+
         Animator curAnimator = curObject.GetComponent<Animator>();
-        curAnimator.runtimeAnimatorController = Resources.Load("SimpleTownLite/_Demo/" + terms[3]) as RuntimeAnimatorController;
+        curAnimator.runtimeAnimatorController = Resources.Load("Animators/" + terms[3]) as RuntimeAnimatorController;
     }
 
     void setRenderer(string[] terms)
@@ -275,12 +293,55 @@ public class SceneManip : MonoBehaviour
         curRenderer.material.color = newColor;
     }
 
+    IEnumerator dynSetRenderer(string[] terms)
+    {
+        float duration = Convert.ToSingle(terms[3]);
+        //float startTime = Time.time;
+        float startTime = globalTime.currTime;
+
+        Renderer curRenderer = curObject.GetComponent<Renderer>();
+        Color newColor = curRenderer.material.color;
+        //Debug.Log("Original color: " + newColor);
+        //source: https://answers.unity.com/questions/1016155/standard-material-shader-ignoring-setfloat-propert.html
+        curRenderer.material.SetFloat("_Mode", 2);
+        curRenderer.material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+        curRenderer.material.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+        curRenderer.material.SetInt("_ZWrite", 0);
+        curRenderer.material.DisableKeyword("_ALPHATEST_ON");
+        curRenderer.material.EnableKeyword("_ALPHABLEND_ON");
+        curRenderer.material.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+        curRenderer.material.renderQueue = 3000;
+
+        string[] component = terms[2].Split('.');
+        string value = component[0].ToLower();
+        //foreach(string part in component) Debug.Log(part);
+
+        while(globalTime.currTime - startTime < duration)
+        {
+            float timeSinceStart = globalTime.currTime - startTime;
+            float percentComplete = timeSinceStart / duration;
+
+            newColor = curRenderer.material.color;
+
+            if(value == "red") newColor.r = blend(percentComplete, Convert.ToSingle(terms[5]), Convert.ToSingle(terms[7]));
+            else if(value == "green") newColor.g = blend(percentComplete, Convert.ToSingle(terms[5]), Convert.ToSingle(terms[7]));
+            else if(value == "blue") newColor.b = blend(percentComplete, Convert.ToSingle(terms[5]), Convert.ToSingle(terms[7]));
+            else if(value == "alpha" || value == "transparency") newColor.a = blend(percentComplete, Convert.ToSingle(terms[5]), Convert.ToSingle(terms[7]));
+            else Debug.Log("Invalid renderer variable.");
+
+            //Debug.Log("New color: " + newColor);
+            curRenderer.material.color = newColor;
+
+            yield return null;
+        }
+    }
+
     //Creates a new instance of the specified prefab with optional specified transformation values
     int create(string[] terms)
     {
         //Assign default command terms
         string prefabName = "default", objectName = "default";
-        float xpos = 0, ypos = 0;
+        float xpos = 0, ypos = 0, zpos = 0;
 
         //Test for minimum terms
         int termCount = terms.Count();
@@ -296,20 +357,22 @@ public class SceneManip : MonoBehaviour
             objectName = terms[1];
             prefabName = terms[2];
         }
-        if(termCount >= 5)
+        if(termCount >= 6)
         {
             xpos = Convert.ToSingle(terms[3]);
             ypos = Convert.ToSingle(terms[4]);
+            zpos = Convert.ToSingle(terms[5]);
         }
         
         
         //Create new instance of the given prefab
-        curObject = Resources.Load<GameObject>("SimpleTownLite/_Prefabs/" + prefabName);
+        curObject = Resources.Load<GameObject>("Prefabs/" + prefabName);
+        curObject.tag = "Player";
         GameObject NewGameObj = Instantiate(curObject) as GameObject;
 
         //Apply all values to the new GameObject
         NewGameObj.name = objectName;
-        NewGameObj.transform.position = new Vector3(xpos, ypos, 0);
+        NewGameObj.transform.position = new Vector3(xpos, ypos, zpos);
 
         return 0;
     }
@@ -367,9 +430,11 @@ public class SceneManip : MonoBehaviour
             
             Component curComponent = curObject.GetComponent(component[0]);
             if(cellName == "width" || cellName == "length" || cellName == "height") StartCoroutine(dynSetTransform(terms));
+            else if(cellName == "red" || cellName == "green" || cellName == "blue" || cellName == "alpha" || cellName == "transparency") StartCoroutine(dynSetRenderer(terms));
             else if(curComponent != null)
             {
                 if(cellName.Contains("transform")) StartCoroutine(dynSetTransform(terms));
+                if(cellName.Contains("renderer")) StartCoroutine(dynSetRenderer(terms));
                 return 0;
             }
             else Debug.Log("Can not set value, invalid component name.");
@@ -391,6 +456,27 @@ public class SceneManip : MonoBehaviour
             curObject = GameObject.Find(terms[1]);
             Destroy(curObject);
         }
+
+        return 0;
+    }
+
+    int path(string[] terms)
+    {
+        GameObject pathObject = new GameObject(terms[1]);
+
+        pathObject.AddComponent<PathCreator>();
+        PathCreator pathCreator = pathObject.GetComponent<PathCreator>() as PathCreator;
+        
+        BezierPath path = pathCreator.bezierPath;
+
+        for(int i = 0; i < path.NumPoints; i++) 
+        {
+            Debug.Log(path.GetPoint(i));
+        }
+
+        //for each path component
+            //for each point in the current path component
+                //add point to main path, w/ AddSegmentToEnd?
 
         return 0;
     }
@@ -440,6 +526,13 @@ public class SceneManip : MonoBehaviour
             curObject.GetComponent<PathFollower>().pathCreator = null;
         }
         
+        return 0;
+    }
+
+    int pause(string[] terms)
+    {
+        //Debug.Log("Pausing...");
+        pauseTime.PauseFunction();
         return 0;
     }
 
@@ -493,7 +586,7 @@ public class SceneManip : MonoBehaviour
                 result = dynSetCell(terms);
                 break;
             case "PATH":
-                Debug.Log(terms[0] + " not currently supported.");
+                result = path(terms);
                 break;
             case "MOVE":
                 result = move(terms);
@@ -502,7 +595,7 @@ public class SceneManip : MonoBehaviour
                 result = removeFromPath(terms);
                 break;
             case "PAUSE":
-                Debug.Log(terms[0] + " not currently supported.");
+                result = pause(terms);
                 break;
             default:
                 Debug.Log("Unrecognized command: '" + terms[0] + "'");
@@ -515,6 +608,9 @@ public class SceneManip : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        //curObject = GameObject.Find("Car");
+        //Debug.Log(curObject.GetComponent("Animator"));
+
         //get list for entire input file
         commandList = new CommandList(textPath);
 
@@ -526,7 +622,7 @@ public class SceneManip : MonoBehaviour
 
         int linesRemoved = 0;
         string bounds = commandList.functions[mainFunction];
-        Debug.Log("Building " + mainFunction + ", bounds: " + bounds);
+        //Debug.Log("Building " + mainFunction + ", bounds: " + bounds);
         int lower = Convert.ToInt32(bounds.Split('-')[0]);
         int upper = Convert.ToInt32(bounds.Split('-')[1]);
         
@@ -551,7 +647,10 @@ public class SceneManip : MonoBehaviour
         }        
 
         commandList.commands = commandList.commands.OrderBy(n => n.time).ToList();
-        foreach(Command command in commandList.commands) Debug.Log(command.time + " " + command.line);
+        //foreach(Command command in commandList.commands) Debug.Log(command.time + " " + command.line);
+        //Debug.Log("________________________________________");
+
+        //Debug.Log("0: " + commandList.getIndexAtTime(0) + "| 1500: " + commandList.getIndexAtTime(1500f));
     }
 
     void getReferenceFunctions(CommandList curList, string functionName, float curTime)
@@ -608,15 +707,21 @@ public class SceneManip : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(index < commandList.commands.Count)
+        //globalTime.deltaTime;
+        //Debug.Log(globalTime.currTime);
+        if(!globalTime.isBeingControlledByUser)
         {
-            //Get the current command
-            curCommand = commandList.commands[index];
-
-            if(Time.time > curCommand.time)
+            if(index < commandList.commands.Count)
             {
-                execute(curCommand.line, curCommand.args);
-                index++;
+                //Get the current command
+                curCommand = commandList.commands[index];
+
+                //if(Time.time > curCommand.time)
+                if(globalTime.currTime > curCommand.time)
+                {
+                    execute(curCommand.line, curCommand.args);
+                    index++;
+                }
             }
         }
     }

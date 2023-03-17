@@ -1,18 +1,22 @@
 INCLUDE Reference.txt
 
 FUNCTION test
-CREATE P1 Vehicles_PizzaCar -5 10
-CREATE P2 Vehicles_PizzaCar 0 10
-CREATE P3 Vehicles_PizzaCar 5 10
-CREATE P4 Vehicles_PizzaCar 10 10
+CREATE P1 Vehicles_PizzaCar -5 10 0
+CREATE P4 Vehicles_PizzaCar 10 10 0
+PATH NewPath RIGHTPASS +Path1 +Path2
 TIME 1
 SETOBJCELL P1 length 4
 SETOBJCELL P4 red 0
 SETOBJCELL P4 alpha 0.4
+SETOBJCELL P4 Animator MGR
 CALL createCar
+PAUSE
 TIME 2
 DYNUPDATECELL P1 length 1 FROM 4 TO 8
-TIME 4
+DYNUPDATECELL P4 alpha 1 FROM 0.4 TO 1
+DYNUPDATECELL P4 red 1 FROM 0 TO 1
+PAUSE
+TIME 6
 CALL moveCar
 TIME 100
 //Don't read this
