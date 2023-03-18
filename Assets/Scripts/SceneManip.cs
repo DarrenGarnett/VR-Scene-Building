@@ -96,6 +96,7 @@ public class SceneManip : MonoBehaviour
     //private List<Command> commands = new List<Command>();
     private CommandList commandList;
     public string mainFunction;
+    private bool waited = false;
 
     Vector3 changeVec(Vector3 inVec, string[] terms)
     {
@@ -255,6 +256,11 @@ public class SceneManip : MonoBehaviour
     void setAnimator(string[] terms)
     {            
         curObject.AddComponent<AnimationHandler>();
+        /*if(curObjectcurObject.GetComponent(terms[3]) == null) 
+        {
+                //curObject.AddComponent(component[0]);
+                curComponent = curObject.GetComponent(component[0]);
+        }*/
 
         Animator curAnimator = curObject.GetComponent<Animator>();
         curAnimator.runtimeAnimatorController = Resources.Load("Animators/" + terms[3]) as RuntimeAnimatorController;
@@ -263,6 +269,12 @@ public class SceneManip : MonoBehaviour
     void setRenderer(string[] terms)
     {
         Renderer curRenderer = curObject.GetComponent<Renderer>();
+        if(curRenderer == null)
+        {
+            Debug.Log("curRenderer is null.");
+            return;
+        }
+        //Debug.Log(curObject + " " + curRenderer);
         Color newColor = curRenderer.material.color;
         //Debug.Log("Original color: " + newColor);
         //source: https://answers.unity.com/questions/1016155/standard-material-shader-ignoring-setfloat-propert.html
@@ -284,13 +296,16 @@ public class SceneManip : MonoBehaviour
         else if(value == "blue") newColor.b = Convert.ToSingle(terms[3]);
         else if(value == "alpha" || value == "transparency") 
         {
+            //Debug.Log("Changing alpha");
             //curRenderer.material.SetFloat("_Mode", 2);
             newColor.a = Convert.ToSingle(terms[3]);
         }
         else Debug.Log("Invalid renderer variable.");
 
         //Debug.Log("New color: " + newColor);
+        Debug.Log("Old color: " + curRenderer.material.color);
         curRenderer.material.color = newColor;
+        Debug.Log("New color: " + curRenderer.material.color);
     }
 
     IEnumerator dynSetRenderer(string[] terms)
@@ -334,7 +349,9 @@ public class SceneManip : MonoBehaviour
                 //Debug.Log("New color: " + newColor);
                 curRenderer.material.color = newColor;
             }
+            else Debug.Log("Renderer is null.");
 
+            //Debug.Log("Yield return null");
             yield return null;
         }
     }
@@ -370,12 +387,20 @@ public class SceneManip : MonoBehaviour
         
         //Create new instance of the given prefab
         curObject = Resources.Load<GameObject>("Prefabs/" + prefabName);
+        if(curObject == null)
+        {
+            Debug.Log("Invalid Prefab.");
+            return 1;
+        }
         curObject.tag = "Player";
+        //curObject.SetParent(GameObject.Find("Dynamic").transform);
         GameObject NewGameObj = Instantiate(curObject) as GameObject;
 
         //Apply all values to the new GameObject
         NewGameObj.name = objectName;
         NewGameObj.transform.position = new Vector3(xpos, ypos, zpos);
+
+        //Debug.Log(NewGameObj.name + " initital color = " + NewGameObj.GetComponent<Renderer>().material.color);
 
         return 0;
     }
@@ -398,11 +423,13 @@ public class SceneManip : MonoBehaviour
         else
         {
             curObject = GameObject.Find(terms[1]);
+            //Debug.Log(curObject.name + " pre-change color = " + curObject.GetComponent<Renderer>().material.color);
 
             string[] component = terms[2].Split('.');
             string cellName = component[0].ToLower();
             
             Component curComponent = curObject.GetComponent(component[0]);
+
             if(cellName == "width" || cellName == "length" || cellName == "height") setTransform(terms);
             else if(cellName == "red" || cellName == "green" || cellName == "blue" || cellName == "alpha" || cellName == "transparency") setRenderer(terms);
             else if(curComponent != null)
@@ -412,7 +439,7 @@ public class SceneManip : MonoBehaviour
                 if(cellName.Contains("renderer")) setRenderer(terms);
                 return 0;
             }
-            else Debug.Log("Can not set value, invalid component name.");
+            else Debug.Log("Can not set value, component not attached or wrong name: " + component[0]);
         }
         return 1;
     }
@@ -475,7 +502,7 @@ public class SceneManip : MonoBehaviour
 
         for(int i = 0; i < path.NumPoints; i++) 
         {
-            Debug.Log(path.GetPoint(i));
+            //Debug.Log(path.GetPoint(i));
         }
 
         //for each path component
@@ -711,6 +738,35 @@ public class SceneManip : MonoBehaviour
         }
     }
 
+    IEnumerator waitOneFrame()
+    {
+        //Debug.Log("Before while...");
+        while(true)
+        {
+            //Debug.Log("In while...");
+            if(!waited) 
+            {
+                //Debug.Log("Waited one frame...");
+                waited = true;
+                yield return null;
+            }
+            else
+            {
+                //Debug.Log("Done waiting.");
+                waited = false;
+                //execute commands up to current index
+                index = commandList.getIndexAtTime(globalTime.currTime);
+                for(int i = 0; i < index; i++)
+                {
+                    curCommand = commandList.commands[i];
+                    if(curCommand.args[0] != "PAUSE") execute(curCommand.line, curCommand.args);
+                }
+                break;
+            }
+        }
+        //Debug.Log("After while...");
+    }
+
     // Update is called once per frame
     void Update()
     {
@@ -725,10 +781,13 @@ public class SceneManip : MonoBehaviour
                 GameObject[] createdObjects = GameObject.FindGameObjectsWithTag("Player");
                 foreach(GameObject obj in createdObjects) 
                 {
-                    Debug.Log("Deleting " + obj.name);
+                    //Debug.Log("Deleting " + obj.name);
                     if(obj != null) Destroy(obj);
                 }
 
+                //Debug.Log("Calling waitoneframe...");
+                StartCoroutine(waitOneFrame());
+/*
                 //execute commands up to current index
                 index = commandList.getIndexAtTime(globalTime.currTime);
                 for(int i = 0; i < index; i++)
@@ -736,8 +795,9 @@ public class SceneManip : MonoBehaviour
                     curCommand = commandList.commands[i];
                     if(curCommand.args[0] != "PAUSE") execute(curCommand.line, curCommand.args);
                 }
-
+*/
                 globalTime.timeChanged = false;
+
             }
 
             if(index < commandList.commands.Count)

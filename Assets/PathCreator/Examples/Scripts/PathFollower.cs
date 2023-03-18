@@ -12,8 +12,9 @@ namespace PathCreation.Examples
         float distanceTravelled;
         Animator followerAnimator;
         Vector3 prevPosition;
-        Quaternion prevRotation;
         Vector3 prevPathOffset;
+        Quaternion prevRotation;
+        Quaternion prevPathRotation;
 
         public float cycleDuration = 1;
 
@@ -28,6 +29,8 @@ namespace PathCreation.Examples
                 //if(followerAnimator) followerAnimator.applyRootMotion = false;
 
                 prevPathOffset = new Vector3(0, 0, 0);
+
+                prevPathRotation = Quaternion.Euler(0, 0, 0);
 
                 transform.position = prevPathOffset;
 
