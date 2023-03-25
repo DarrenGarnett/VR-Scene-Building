@@ -538,6 +538,15 @@ public class SceneManip : MonoBehaviour
             curFollower.cycleDuration = Convert.ToSingle(terms[3]);
 
             curFollower.endOfPathInstruction = EndOfPathInstruction.Stop;
+
+            //curFollower.globalTime = globalTime;
+            float progress = (globalTime.currTime - curCommand.time) / Convert.ToSingle(terms[3]);
+            //Debug.Log(progress);
+            //curFollower.
+            float distance = progress * curCreator.path.length;
+            //Debug.Log(distance);
+            curFollower.offsetPosition = distance;
+            //curFollower.offsetPosition = curCreator.path.GetPointAtDistance(distance, curFollower.endOfPathInstruction);
         }
         return 0;
     }
@@ -596,7 +605,7 @@ public class SceneManip : MonoBehaviour
         //Initialize return value
         int result = 0;
 
-        Debug.Log(command);
+        //Debug.Log(command);
         
         //Determine command by name
         switch(terms[0])
@@ -759,7 +768,93 @@ public class SceneManip : MonoBehaviour
                 for(int i = 0; i < index; i++)
                 {
                     curCommand = commandList.commands[i];
-                    if(curCommand.args[0] != "PAUSE") execute(curCommand.line, curCommand.args);
+                    if(curCommand.args[0] != "PAUSE") 
+                    {  
+                        if(curCommand.args[0] == "MOVE")
+                        {
+
+                        }
+
+                        //start cell updates at current time
+                        if(curCommand.args[0] == "DYNUPDATECELL") 
+                        {
+                            float offset = globalTime.currTime - curCommand.time;
+                            float percentComplete = offset / Convert.ToSingle(curCommand.args[3]);
+                            
+                            string[] newArgs = new string[12];
+
+                            //if duration already passed
+                            if(percentComplete >= 1)
+                            {
+                                //call as SETOBJCELL
+                                //Debug.Log("Past duration: " + offset + " > " + Convert.ToSingle(curCommand.args[3]));
+                                
+                                newArgs[1] = curCommand.args[1];
+                                newArgs[2] = curCommand.args[2];
+
+                                if(curCommand.args.Count() == 12) 
+                                {   
+                                    newArgs[3] = curCommand.args[9];
+                                    newArgs[4] = curCommand.args[10];
+                                    newArgs[5] = curCommand.args[11];
+                                }
+                                else newArgs[3] = curCommand.args[7];
+
+                                string line = "";
+                                foreach(string arg in newArgs) line += arg + " ";
+                                Debug.Log("SETOBJCELL" + line);
+                                setCell(newArgs);
+                            }
+                            else
+                            {
+                                //call with adjusted partial values
+                                //Debug.Log("Within duration: " + offset + " < " + Convert.ToSingle(curCommand.args[3]));
+                                
+                                newArgs[1] = curCommand.args[1];
+                                newArgs[2] = curCommand.args[2];
+                                newArgs[4] = curCommand.args[4];
+
+                                float offsetDuration = Convert.ToSingle(curCommand.args[3]) * (1 - percentComplete);
+                                if(offsetDuration > 0) newArgs[3] = offsetDuration.ToString();
+
+                                if(curCommand.args.Count() == 12) 
+                                {
+                                    float offsetVal1 = Convert.ToSingle(curCommand.args[5]) + ((Convert.ToSingle(curCommand.args[9]) - Convert.ToSingle(curCommand.args[5])) * percentComplete);
+                                    float offsetVal2 = Convert.ToSingle(curCommand.args[6]) + ((Convert.ToSingle(curCommand.args[10]) - Convert.ToSingle(curCommand.args[6])) * percentComplete);
+                                    float offsetVal3 = Convert.ToSingle(curCommand.args[7]) + ((Convert.ToSingle(curCommand.args[11]) - Convert.ToSingle(curCommand.args[7])) * percentComplete);
+                                
+                                    newArgs[5] = offsetVal1.ToString();
+                                    newArgs[6] = offsetVal2.ToString();
+                                    newArgs[7] = offsetVal3.ToString();
+                                    newArgs[8] = curCommand.args[8];
+                                    newArgs[9] = curCommand.args[9];
+                                    newArgs[10] = curCommand.args[10];
+                                    newArgs[11] = curCommand.args[11];
+                                }
+                                else
+                                {
+                                    float offsetVal = Convert.ToSingle(curCommand.args[5]) + ((Convert.ToSingle(curCommand.args[7]) - Convert.ToSingle(curCommand.args[5])) * percentComplete);
+
+                                    newArgs[5] = offsetVal.ToString();
+                                    newArgs[6] = curCommand.args[6];
+                                    newArgs[7] = curCommand.args[7];
+                                }
+
+                                string line = "";
+                                foreach(string arg in newArgs) line += arg + " ";
+                                Debug.Log("DYNUPDATECELL" + line);
+                                dynSetCell(newArgs);
+                            }
+                        }
+                        else execute(curCommand.line, curCommand.args);
+
+                        //set animator to current time
+                        if(curCommand.line.Contains("Animator")) 
+                        {
+                            Animator anim = GameObject.Find(curCommand.args[1]).GetComponent<Animator>();
+                            anim.Update(globalTime.currTime - curCommand.time);
+                        }
+                    }
                 }
                 break;
             }

@@ -14,6 +14,7 @@ SETOBJCELL Pete Transform.rotation.y 90
 TIME 9
 DESTROY Pete
 MOVE Car Path3 2
-TIME 11
+//DYNUPDATECELL Car Transform.position.x 2 FROM 6 TO -15
+TIME 17
 DESTROY Car
 END test

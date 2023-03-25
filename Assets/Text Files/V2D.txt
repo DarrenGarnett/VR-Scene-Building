@@ -1,17 +1,14 @@
 INCLUDE Reference.txt
 
 FUNCTION test
-CREATE P1 Vehicles_PizzaCar -5 10 0
-CREATE P4 Vehicles_PizzaCar  10 0 -7
-TIME 1
-CREATE P2 Vehicles_PizzaCar 15 10 0
-SETOBJCELL P1 length 4
-SETOBJCELL P4 red 0
-SETOBJCELL P4 alpha 0.4
-SETOBJCELL P4 Animator MGR
-SETOBJCELL P4 Animator Animation2
+CREATE Car Vehicles_PizzaCar 6 0 -7
+SETOBJCELL Car Transform.rotation.y 90
 TIME 2
-SETOBJCELL P1 length 8
+DYNUPDATECELL Car Transform.position.x 2 FROM 6 TO -15
+TIME 4
+DYNUPDATECELL Car Transform.position.x 2 FROM -15 TO -20
+TIME 6
+SETOBJCELL Car Transform.rotation.y 90
 END test
 
 FUNCTION no
