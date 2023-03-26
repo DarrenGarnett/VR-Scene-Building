@@ -6,6 +6,7 @@ SETOBJCELL Pete Transform.scale 2 2 2
 CREATE Car Vehicles_PizzaCar 6 0 -7
 SETOBJCELL Car Transform.rotation.y 90
 SETOBJCELL Pete Animator WorkOnDevice
+PATH NewPath RIGHTPASS +Path2 +Path3 -Path2
 TIME 3
 SETOBJCELL Pete Animator Walk
 TIME 8

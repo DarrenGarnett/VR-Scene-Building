@@ -492,22 +492,53 @@ public class SceneManip : MonoBehaviour
 
     int path(string[] terms)
     {
+        //initialize path to construct
         GameObject pathObject = new GameObject(terms[1]);
         pathObject.tag = "Player";
-
         pathObject.AddComponent<PathCreator>();
         PathCreator pathCreator = pathObject.GetComponent<PathCreator>() as PathCreator;
-        
         BezierPath path = pathCreator.bezierPath;
+        
+        //start building on the new path with the first point of the first path component
+        Vector3 curPoint = GameObject.Find(terms[3].Remove(0, 1)).GetComponent<PathCreator>().bezierPath.GetPointsInSegment(0)[0];
+        path.AddSegmentToEnd(curPoint);
 
-        for(int i = 0; i < path.NumPoints; i++) 
+        //for each path component in terms
+        for(int i = 3; i < terms.Count(); i++)
         {
-            //Debug.Log(path.GetPoint(i));
+            //get data for current path component
+            int sign = Convert.ToInt32(terms[i][0] + "1");
+            string pathName = terms[i].Remove(0, 1);
+            BezierPath pathToAdd = GameObject.Find(pathName).GetComponent<PathCreator>().bezierPath;
+            
+            //Vector3 pos = GameObject.Find(pathName).transform.position;
+            //Debug.Log(pathName + " has " + pathToAdd.NumAnchorPoints + " segments at " + pos);
+            
+            for(int j = 1; j < pathToAdd.NumAnchorPoints; j++)
+            {
+                //get points in current segment(0 and 3 are anchors, 1 and 2 are controls)
+                Vector3[] points = pathToAdd.GetPointsInSegment(j);
+
+                //get distance between anchor points in current segment
+                Vector3 dist = (points[3] - points[0]) * sign;
+                //Debug.Log("Dist = " + dist);
+                    
+                //add segment to constructed path by distance in current segment
+                path.AddSegmentToEnd(curPoint + dist);
+
+                //set control points in added segment
+                path.SetPoint(path.NumPoints - 2, curPoint + ((points[2] - points[0]) * sign));
+                path.SetPoint(path.NumPoints - 3, curPoint + ((points[1] - points[0]) * sign));
+
+                //set current point to new point in constructed path
+                curPoint = curPoint + dist;
+                //Debug.Log("New curPoint = " + curPoint);
+            }
         }
 
-        //for each path component
-            //for each point in the current path component
-                //add point to main path, w/ AddSegmentToEnd?
+        //remove default segments(created when pathCreator initialized)
+        path.DeleteSegment(0);
+        path.DeleteSegment(1);
 
         return 0;
     }
