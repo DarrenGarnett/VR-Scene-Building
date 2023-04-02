@@ -13,7 +13,7 @@ public class PlaybackSpeedScript : MonoBehaviour
         currPlaySpeed = 1;
     }
 
-    public void UpdatePlaybackSpeed(int selectedVal)
+    public static void UpdatePlaybackSpeed(int selectedVal)
     {
         // Set the playback speed to the appropriate value based on the selected item in the dropdown
         switch(selectedVal)
@@ -42,16 +42,14 @@ public class PlaybackSpeedScript : MonoBehaviour
             case 7:
                 currPlaySpeed = 2f;
                 break;
+            default:
+                break;
         }
 
         /*
          * Update the time scale to the correct playback speed
          * However, only do so if the animation isn't paused
          */
-        if(Time.timeScale != 0)
-        {
-            Time.timeScale = currPlaySpeed;
-        }
+        if(Time.timeScale != 0) Time.timeScale = currPlaySpeed;
     }
-
 }

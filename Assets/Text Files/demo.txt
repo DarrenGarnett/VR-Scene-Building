@@ -1,6 +1,7 @@
 INCLUDE Reference.txt
 
 FUNCTION test
+TIMESCALE 2
 CREATE Pete Worker -10 0 -2
 SETOBJCELL Pete Transform.scale 2 2 2
 CREATE Car Vehicles_PizzaCar 6 0 -7
@@ -8,14 +9,16 @@ SETOBJCELL Car Transform.rotation.y 90
 SETOBJCELL Pete Animator WorkOnDevice
 PATH NewPath RIGHTPASS +Path2 +Path3 -Path2
 TIME 3
+TIMESCALE 3
 SETOBJCELL Pete Animator Walk
 TIME 8
+TIMESCALE 1
 SETOBJCELL Pete Animator Empty
 SETOBJCELL Pete Transform.rotation.y 90
 TIME 9
 DESTROY Pete
-MOVE Car Path3 2
+MOVE Car NewPath 2
 //DYNUPDATECELL Car Transform.position.x 2 FROM 6 TO -15
-TIME 17
+TIME 11
 DESTROY Car
 END test

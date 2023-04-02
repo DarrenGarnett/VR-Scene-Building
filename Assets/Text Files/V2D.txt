@@ -4,11 +4,13 @@ FUNCTION test
 CREATE Car Vehicles_PizzaCar 6 0 -7
 SETOBJCELL Car Transform.rotation.y 90
 TIME 2
-DYNUPDATECELL Car Transform.position.x 2 FROM 6 TO -15
+//DYNUPDATECELL Car Transform.position.x 2 FROM 6 TO -15
+SETOBJCELL Car Transform.rotation.y 180
 TIME 4
-DYNUPDATECELL Car Transform.position.x 2 FROM -15 TO -20
+//DYNUPDATECELL Car Transform.position.x 2 FROM -15 TO -20
+SETOBJCELL Car Transform.rotation.y 270
 TIME 6
-SETOBJCELL Car Transform.rotation.y 90
+SETOBJCELL Car Transform.rotation.y 0
 END test
 
 FUNCTION no

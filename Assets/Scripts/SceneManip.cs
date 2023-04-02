@@ -45,7 +45,7 @@ public class CommandList
                 temp.args = line.Split(' ');
                 
 
-                if(line.Contains("TIME")) curTime = Convert.ToSingle(temp.args[1]);
+                if(line.Split(' ')[0] == "TIME") curTime = Convert.ToSingle(temp.args[1]);
                 else if(line.Contains("INCLUDE")) referenceList.Add(temp.args[1]);
                 else if(line.Contains("FUNCTION")) 
                 {
@@ -427,7 +427,8 @@ public class SceneManip : MonoBehaviour
 
             string[] component = terms[2].Split('.');
             string cellName = component[0].ToLower();
-            
+
+            //Debug.Log(curObject.name);
             Component curComponent = curObject.GetComponent(component[0]);
 
             if(cellName == "width" || cellName == "length" || cellName == "height") setTransform(terms);
@@ -607,6 +608,15 @@ public class SceneManip : MonoBehaviour
         return 0;
     }
 
+    int setTimescale(string[] terms)
+    {
+        PlaybackSpeedScript.currPlaySpeed = Convert.ToSingle(terms[1]);
+
+        //The 100 is arbitrary, just needs to be more than the options in the dropdown, i.e. > 8
+        PlaybackSpeedScript.UpdatePlaybackSpeed(100);
+        return 0;
+    }
+
     //Translates the specified object by a specified offset
     int translate(string[] terms)
     {
@@ -667,6 +677,9 @@ public class SceneManip : MonoBehaviour
                 break;
             case "PAUSE":
                 result = pause(terms);
+                break;
+            case "TIMESCALE":
+                result = setTimescale(terms);
                 break;
             default:
                 Debug.Log("Unrecognized command: '" + terms[0] + "'");
@@ -780,10 +793,8 @@ public class SceneManip : MonoBehaviour
 
     IEnumerator waitOneFrame()
     {
-        //Debug.Log("Before while...");
         while(true)
         {
-            //Debug.Log("In while...");
             if(!waited) 
             {
                 //Debug.Log("Waited one frame...");
@@ -792,7 +803,7 @@ public class SceneManip : MonoBehaviour
             }
             else
             {
-                //Debug.Log("Done waiting.");
+                //Debug.Log("Catch up started.");
                 waited = false;
                 //execute commands up to current index
                 index = commandList.getIndexAtTime(globalTime.currTime);
@@ -890,7 +901,6 @@ public class SceneManip : MonoBehaviour
                 break;
             }
         }
-        //Debug.Log("After while...");
     }
 
     // Update is called once per frame
@@ -903,7 +913,7 @@ public class SceneManip : MonoBehaviour
                 Debug.Log("Time change detected.");
                 if(PauseScript.paused) pauseTime.PauseFunction();
 
-                //clear created objects
+                //mark created objects for destruction at end of frame
                 GameObject[] createdObjects = GameObject.FindGameObjectsWithTag("Player");
                 foreach(GameObject obj in createdObjects) 
                 {
@@ -911,22 +921,14 @@ public class SceneManip : MonoBehaviour
                     if(obj != null) Destroy(obj);
                 }
 
-                //Debug.Log("Calling waitoneframe...");
+                //have to wait one frame for old object to destroy, and then execute commands
                 StartCoroutine(waitOneFrame());
-/*
-                //execute commands up to current index
-                index = commandList.getIndexAtTime(globalTime.currTime);
-                for(int i = 0; i < index; i++)
-                {
-                    curCommand = commandList.commands[i];
-                    if(curCommand.args[0] != "PAUSE") execute(curCommand.line, curCommand.args);
-                }
-*/
+
                 globalTime.timeChanged = false;
 
             }
 
-            if(index < commandList.commands.Count)
+            if(index < commandList.commands.Count && !waited)
             {
                 //Get the current command
                 curCommand = commandList.commands[index];
