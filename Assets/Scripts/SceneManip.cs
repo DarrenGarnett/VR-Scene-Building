@@ -88,6 +88,7 @@ public class SceneManip : MonoBehaviour
 {
     public GlobalTimeScript globalTime;
     public PauseScript pauseTime;
+    public SwitchCameraScript switchCamera;
     private GameObject curObject;
     //private string[] commands;
     public string textPath;
@@ -501,7 +502,10 @@ public class SceneManip : MonoBehaviour
         BezierPath path = pathCreator.bezierPath;
         
         //start building on the new path with the first point of the first path component
-        Vector3 curPoint = GameObject.Find(terms[3].Remove(0, 1)).GetComponent<PathCreator>().bezierPath.GetPointsInSegment(0)[0];
+        //Vector3 curPoint = GameObject.Find(terms[3].Remove(0, 1)).GetComponent<PathCreator>().bezierPath.GetPointsInSegment(0)[0];
+
+        //start building on the new path from the path origin
+        Vector3 curPoint = new Vector3(0, 0, 0);
         path.AddSegmentToEnd(curPoint);
 
         //for each path component in terms
@@ -617,6 +621,28 @@ public class SceneManip : MonoBehaviour
         return 0;
     }
 
+    int setCamera(string[] terms)
+    {
+        curObject = GameObject.Find(terms[1]);
+        Renderer curRend = curObject.GetComponent<Renderer>();
+
+        if(curObject != null)
+        {
+            if(curRend != null) switchCamera.ChangeTarget(curObject);
+            else
+            {
+                Debug.Log(terms[1] + " requires a renderer for bounds calculations.");
+                return 1;
+            }
+        }
+        else
+        {
+            Debug.Log(terms[1] + " does not exist or is misnamed.");
+            return 1;
+        }
+        return 0;
+    }
+
     //Translates the specified object by a specified offset
     int translate(string[] terms)
     {
@@ -680,6 +706,9 @@ public class SceneManip : MonoBehaviour
                 break;
             case "TIMESCALE":
                 result = setTimescale(terms);
+                break;
+            case "LOOKAT":
+                result = setCamera(terms);
                 break;
             default:
                 Debug.Log("Unrecognized command: '" + terms[0] + "'");

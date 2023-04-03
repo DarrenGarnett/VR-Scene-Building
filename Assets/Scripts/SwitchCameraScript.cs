@@ -33,7 +33,7 @@ public class SwitchCameraScript : MonoBehaviour
 
         mainCameraControls = GameObject.FindGameObjectWithTag("MainCameraMovement");
         modelsIdx = 0;
-        CameraFollow.target = models[modelsIdx].transform;
+        CameraFollow.target = models[modelsIdx];
     }
 
     private void Update()
@@ -60,7 +60,7 @@ public class SwitchCameraScript : MonoBehaviour
             mainCamera.enabled = false;
             mainCameraActive = false;
             followCamera.enabled = true;
-            CameraFollow.target = models[modelsIdx].transform;
+            CameraFollow.target = models[modelsIdx];
             mainCameraControls.SetActive(false);
             CameraMovement.drag = false;
         }
@@ -69,7 +69,6 @@ public class SwitchCameraScript : MonoBehaviour
          * set modelIdx to 0, deactivate followCamera, and activate mainCamera
          * also show the main camera controls
          */
-        //else if(modelsIdx == models.Length - 1)
         else if(modelsIdx == size - 1)
         {
             modelsIdx = 0;
@@ -86,7 +85,17 @@ public class SwitchCameraScript : MonoBehaviour
         else
         {
             modelsIdx++;
-            CameraFollow.target = models[modelsIdx].transform;
+            CameraFollow.target = models[modelsIdx];
         }
+    }
+
+    public void ChangeTarget(GameObject targetObj)
+    {
+        mainCamera.enabled = false;
+        mainCameraActive = false;
+        followCamera.enabled = true;
+        CameraFollow.target = targetObj;
+        mainCameraControls.SetActive(false);
+        CameraMovement.drag = false;
     }
 }
