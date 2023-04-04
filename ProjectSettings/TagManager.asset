@@ -5,6 +5,9 @@ TagManager:
   serializedVersion: 2
   tags:
   - UIElement
+  - MainCameraMovement
+  - Target
+  - Runtime
   layers:
   - Default
   - TransparentFX

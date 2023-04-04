@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AI;
 using UnityEngine.SceneManagement;
 using UnityEditor;
 using System;
@@ -94,7 +95,6 @@ public class SceneManip : MonoBehaviour
     public string textPath;
     private int index = 0;
     private Command curCommand;
-    //private List<Command> commands = new List<Command>();
     private CommandList commandList;
     public string mainFunction;
     private bool waited = false;
@@ -103,14 +103,19 @@ public class SceneManip : MonoBehaviour
     {
         string[] component = terms[2].Split('.');
 
+        //store surrent values to only displace necessary fields
         Vector3 curVec = inVec;
+
+        //given one value to change
         if(component.Count() == 3)
         {
             if(component[2] == "x") curVec.x = Convert.ToSingle(terms[3]);
             if(component[2] == "y") curVec.y = Convert.ToSingle(terms[3]);
             if(component[2] == "z") curVec.z = Convert.ToSingle(terms[3]);
         }
+        //given three values to change
         else if(terms.Count() == 6) curVec = new Vector3(Convert.ToSingle(terms[3]), Convert.ToSingle(terms[4]), Convert.ToSingle(terms[5]));
+        //built-in alternate term options
         else if(terms[2] == "length") curVec.x = Convert.ToSingle(terms[3]);
         else if(terms[2] == "height") curVec.y = Convert.ToSingle(terms[3]);
         else if(terms[2] == "width") curVec.z = Convert.ToSingle(terms[3]);
@@ -121,7 +126,6 @@ public class SceneManip : MonoBehaviour
     void setTransform(string[] terms)
     {
         string[] component = terms[2].Split('.');
-        //foreach(string part in component) Debug.Log(part);
 
         if(component.Count() > 1)
         {
@@ -255,14 +259,11 @@ public class SceneManip : MonoBehaviour
     }
 
     void setAnimator(string[] terms)
-    {            
-        curObject.AddComponent<AnimationHandler>();
-        /*if(curObjectcurObject.GetComponent(terms[3]) == null) 
-        {
-                //curObject.AddComponent(component[0]);
-                curComponent = curObject.GetComponent(component[0]);
-        }*/
+    {
+        //If there is no AnimationHandler component on the object, add it
+        if(!curObject.TryGetComponent<AnimationHandler>(out AnimationHandler animHandler)) curObject.AddComponent<AnimationHandler>();
 
+        //set runtime animator controller
         Animator curAnimator = curObject.GetComponent<Animator>();
         curAnimator.runtimeAnimatorController = Resources.Load("Animators/" + terms[3]) as RuntimeAnimatorController;
     }
@@ -393,7 +394,7 @@ public class SceneManip : MonoBehaviour
             Debug.Log("Invalid Prefab.");
             return 1;
         }
-        curObject.tag = "Player";
+        curObject.tag = "Runtime";
         //curObject.SetParent(GameObject.Find("Dynamic").transform);
         GameObject NewGameObj = Instantiate(curObject) as GameObject;
 
@@ -401,7 +402,7 @@ public class SceneManip : MonoBehaviour
         NewGameObj.name = objectName;
         NewGameObj.transform.position = new Vector3(xpos, ypos, zpos);
 
-        //Debug.Log(NewGameObj.name + " initital color = " + NewGameObj.GetComponent<Renderer>().material.color);
+        switchCamera.addTarget(NewGameObj);
 
         return 0;
     }
@@ -424,12 +425,10 @@ public class SceneManip : MonoBehaviour
         else
         {
             curObject = GameObject.Find(terms[1]);
-            //Debug.Log(curObject.name + " pre-change color = " + curObject.GetComponent<Renderer>().material.color);
 
             string[] component = terms[2].Split('.');
             string cellName = component[0].ToLower();
 
-            //Debug.Log(curObject.name);
             Component curComponent = curObject.GetComponent(component[0]);
 
             if(cellName == "width" || cellName == "length" || cellName == "height") setTransform(terms);
@@ -486,6 +485,7 @@ public class SceneManip : MonoBehaviour
         else
         {
             curObject = GameObject.Find(terms[1]);
+            switchCamera.removeTarget(curObject);
             Destroy(curObject);
         }
 
@@ -496,7 +496,7 @@ public class SceneManip : MonoBehaviour
     {
         //initialize path to construct
         GameObject pathObject = new GameObject(terms[1]);
-        pathObject.tag = "Player";
+        pathObject.tag = "Runtime";
         pathObject.AddComponent<PathCreator>();
         PathCreator pathCreator = pathObject.GetComponent<PathCreator>() as PathCreator;
         BezierPath path = pathCreator.bezierPath;
@@ -640,29 +640,6 @@ public class SceneManip : MonoBehaviour
             Debug.Log(terms[1] + " does not exist or is misnamed.");
             return 1;
         }
-        return 0;
-    }
-
-    //Translates the specified object by a specified offset
-    int translate(string[] terms)
-    {
-        //Test for minimum terms
-        if(terms.Count() != 6)
-        {
-            //Debug.Log("Invalid terms for moving obect with command '" + command + "'");
-            return 1;
-        }
-        else
-        {
-            //Apply given offset values
-            curObject = GameObject.Find(terms[2]);
-            float xdis = Convert.ToSingle(terms[3]);
-            float ydis = Convert.ToSingle(terms[4]);
-            float zdis = Convert.ToSingle(terms[5]);
-
-            curObject.transform.position += new Vector3(xdis, ydis, zdis);
-        }
-
         return 0;
     }
     
@@ -834,6 +811,10 @@ public class SceneManip : MonoBehaviour
             {
                 //Debug.Log("Catch up started.");
                 waited = false;
+
+                //Reset follow camera target list
+                switchCamera.clearTargets();
+
                 //execute commands up to current index
                 index = commandList.getIndexAtTime(globalTime.currTime);
                 for(int i = 0; i < index; i++)
@@ -943,7 +924,7 @@ public class SceneManip : MonoBehaviour
                 if(PauseScript.paused) pauseTime.PauseFunction();
 
                 //mark created objects for destruction at end of frame
-                GameObject[] createdObjects = GameObject.FindGameObjectsWithTag("Player");
+                GameObject[] createdObjects = GameObject.FindGameObjectsWithTag("Runtime");
                 foreach(GameObject obj in createdObjects) 
                 {
                     //Debug.Log("Deleting " + obj.name);
@@ -969,13 +950,6 @@ public class SceneManip : MonoBehaviour
                     index++;
                 }
             }
-        }
-        else 
-        {
-            //Debug.Log("Slider in use...");
-            //difference = index - commandList.getIndexAtTime(globalTime.currTime);
-            //index = commandList.getIndexAtTime(globalTime.currTime);
-            //timeChanged = true;
         }
     }
 }

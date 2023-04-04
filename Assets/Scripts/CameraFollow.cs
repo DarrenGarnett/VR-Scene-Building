@@ -19,12 +19,14 @@ public class CameraFollow : MonoBehaviour
     {
         if(target != null)
         {
+            //Debug.Log(target.name);
+
             Renderer rend = target.GetComponent<Renderer>();
             if(rend != null)
             {
                 //get the facing direction for each axis
                 Vector3 directions = target.transform.forward + target.transform.right + target.transform.up;
-                //Debug.Log(rend.bounds.size);
+                //Debug.Log("Target bounds: " + rend.bounds.size);
 
                 //zoom by scroll input, with lower bound 1
                 zoom -= Input.mouseScrollDelta.y * zoomStep;
@@ -48,6 +50,9 @@ public class CameraFollow : MonoBehaviour
             }
 
             Vector3 desiredPosition = target.transform.position + locationOffset;// + target.transform.rotation * locationOffset;
+            //Debug.Log("Camera view offset: " + locationOffset);
+            //Debug.Log("Target base position: " + target.transform.position);
+            //Debug.Log("Camera desired position: " + desiredPosition);
             Vector3 smoothedPosition = Vector3.Lerp(transform.position, desiredPosition, smoothSpeed);
             transform.position = smoothedPosition;
 

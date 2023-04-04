@@ -10,7 +10,7 @@ public class SwitchCameraScript : MonoBehaviour
     // List of all models on paths
     public List<GameObject> models = new List<GameObject>();
 
-    private int size = 0;
+    private int size = 0, initSize = 0;
 
     // Int to track position in models list
     int modelsIdx;
@@ -27,25 +27,16 @@ public class SwitchCameraScript : MonoBehaviour
         mainCamera.enabled = true;
         followCamera.enabled = false;
 
-        GameObject[] modelsArray = GameObject.FindGameObjectsWithTag("Player");
+        //Get any target objects within the scene objects before runtime with Target tag
+        GameObject[] modelsArray = GameObject.FindGameObjectsWithTag("Target");
         foreach(GameObject obj in modelsArray) models.Add(obj);
         size = models.Count;
+        initSize = size;
 
         mainCameraControls = GameObject.FindGameObjectWithTag("MainCameraMovement");
         modelsIdx = 0;
-        CameraFollow.target = models[modelsIdx];
-    }
-
-    private void Update()
-    {
-        GameObject[] modelsArray = GameObject.FindGameObjectsWithTag("Player");
-        if(size != modelsArray.Length)
-        {
-            //Debug.Log("Models size changed.");
-            models.Clear();
-            foreach(GameObject obj in modelsArray) models.Add(obj);
-            size = models.Count;
-        }
+        //CameraFollow.target = models[modelsIdx];
+        CameraFollow.target = null;
     }
 
     public void ChangeCamera()
@@ -97,5 +88,24 @@ public class SwitchCameraScript : MonoBehaviour
         CameraFollow.target = targetObj;
         mainCameraControls.SetActive(false);
         CameraMovement.drag = false;
+    }
+
+    public void addTarget(GameObject targetObj)
+    {
+        models.Add(targetObj);
+        size = models.Count;
+    }
+
+    public void removeTarget(GameObject targetObj)
+    {
+        models.Remove(targetObj);
+        size = models.Count;
+    }
+
+    public void clearTargets()
+    {
+        //models.Clear();
+        models.RemoveRange(initSize, size - initSize);
+        size = initSize;
     }
 }
