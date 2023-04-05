@@ -1,21 +1,20 @@
 INCLUDE Reference.txt
 
 FUNCTION test
-CREATE P1 Vehicles_PizzaCar -5 10
-CREATE P2 Vehicles_PizzaCar 0 10
-CREATE P3 Vehicles_PizzaCar 5 10
-CREATE P4 Vehicles_PizzaCar 10 10
-TIME 1
-SETOBJCELL P1 length 4
-SETOBJCELL P4 red 0
-SETOBJCELL P4 alpha 0.4
-CALL createCar
-TIME 2
-DYNUPDATECELL P1 length 1 FROM 4 TO 8
-TIME 4
-CALL moveCar
+CREATE Car1 Vehicles_PizzaCar 6 0 -7
+SETOBJCELL Car1 Transform.rotation.y 90
+CREATE Car2 Vehicles_PizzaCar -6 0 -7
+SETOBJCELL Car2 Transform.rotation.y 270
+TIME 5
+LOOKAT Car1
+TIME 10
+LOOKAT Car2
+TIME 20
+//LOOKAT Car1
+TIME 30
+//LOOKAT Car2
 TIME 100
-//Don't read this
+LOOKAT Car1
 END test
 
 FUNCTION no

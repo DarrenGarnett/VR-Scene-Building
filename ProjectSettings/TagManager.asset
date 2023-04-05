@@ -3,7 +3,11 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - UIElement
+  - MainCameraMovement
+  - Target
+  - Runtime
   layers:
   - Default
   - TransparentFX
