@@ -2,6 +2,7 @@ INCLUDE Reference.txt
 
 FUNCTION test
 TIMESCALE 2
+SETOBJCELL Vehicles_HotdogTruck Animator MGR
 CREATE Pete Worker -10 0 -2
 SETOBJCELL Pete Transform.scale 2 2 2
 CREATE Car Vehicles_PizzaCar 6 0 -7

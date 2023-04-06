@@ -260,12 +260,40 @@ public class SceneManip : MonoBehaviour
 
     void setAnimator(string[] terms)
     {
+        //AnimationHandler is used to pause animations alongside the scene
         //If there is no AnimationHandler component on the object, add it
         if(!curObject.TryGetComponent<AnimationHandler>(out AnimationHandler animHandler)) curObject.AddComponent<AnimationHandler>();
 
-        //set runtime animator controller
-        Animator curAnimator = curObject.GetComponent<Animator>();
-        curAnimator.runtimeAnimatorController = Resources.Load("Animators/" + terms[3]) as RuntimeAnimatorController;
+        //Check for too few terms
+        if(terms.Count() < 4)
+        {
+            Debug.Log("Too few terms to set Animator.");
+            return;
+        }
+        //Setting animator with no avatar
+        else
+        {
+            //Ensure the given animator controller is valid
+            RuntimeAnimatorController RAC = Resources.Load("Animators/" + terms[3]) as RuntimeAnimatorController;
+            if(RAC == null)
+            {
+                Debug.Log("Cannot find '" + terms[3] + "' in Resources/Animators folder.");
+                return;
+            }
+
+            //If there is an Animator component on the object, use it, else add an Animator component
+            if(curObject.TryGetComponent<Animator>(out Animator curAnimator)) 
+            {
+                curAnimator.applyRootMotion = true;
+                curAnimator.runtimeAnimatorController = RAC;
+            }
+            else
+            {
+                Animator newAnimator = curObject.AddComponent<Animator>();
+                newAnimator.applyRootMotion = true;
+                newAnimator.runtimeAnimatorController = RAC;
+            }
+        }
     }
 
     void setRenderer(string[] terms)
@@ -273,12 +301,14 @@ public class SceneManip : MonoBehaviour
         Renderer curRenderer = curObject.GetComponent<Renderer>();
         if(curRenderer == null)
         {
-            Debug.Log("curRenderer is null.");
+            Debug.Log(terms[1] + " does not have a renderer. Can not set renderer value.");
             return;
         }
-        //Debug.Log(curObject + " " + curRenderer);
+
+        //initialize as current color
         Color newColor = curRenderer.material.color;
-        //Debug.Log("Original color: " + newColor);
+        
+        //switch material to mode that allows transparency
         //source: https://answers.unity.com/questions/1016155/standard-material-shader-ignoring-setfloat-propert.html
         curRenderer.material.SetFloat("_Mode", 2);
         curRenderer.material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
@@ -291,34 +321,33 @@ public class SceneManip : MonoBehaviour
 
         string[] component = terms[2].Split('.');
         string value = component[0].ToLower();
-        //foreach(string part in component) Debug.Log(part);
 
+        //built-in term options
         if(value == "red") newColor.r = Convert.ToSingle(terms[3]);
         else if(value == "green") newColor.g = Convert.ToSingle(terms[3]);
         else if(value == "blue") newColor.b = Convert.ToSingle(terms[3]);
-        else if(value == "alpha" || value == "transparency") 
-        {
-            //Debug.Log("Changing alpha");
-            //curRenderer.material.SetFloat("_Mode", 2);
-            newColor.a = Convert.ToSingle(terms[3]);
-        }
+        else if(value == "alpha" || value == "transparency") newColor.a = Convert.ToSingle(terms[3]);
         else Debug.Log("Invalid renderer variable.");
 
-        //Debug.Log("New color: " + newColor);
-        Debug.Log("Old color: " + curRenderer.material.color);
         curRenderer.material.color = newColor;
-        Debug.Log("New color: " + curRenderer.material.color);
     }
 
     IEnumerator dynSetRenderer(string[] terms)
     {
         float duration = Convert.ToSingle(terms[3]);
-        //float startTime = Time.time;
         float startTime = globalTime.currTime;
 
         Renderer curRenderer = curObject.GetComponent<Renderer>();
+        if(curRenderer == null)
+        {
+            Debug.Log(terms[1] + " does not have a renderer. Can not set renderer value.");
+            yield break;
+        }
+
+        //initialize as current color
         Color newColor = curRenderer.material.color;
-        //Debug.Log("Original color: " + newColor);
+        
+        //switch material to mode that allows transparency
         //source: https://answers.unity.com/questions/1016155/standard-material-shader-ignoring-setfloat-propert.html
         curRenderer.material.SetFloat("_Mode", 2);
         curRenderer.material.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
@@ -331,7 +360,6 @@ public class SceneManip : MonoBehaviour
 
         string[] component = terms[2].Split('.');
         string value = component[0].ToLower();
-        //foreach(string part in component) Debug.Log(part);
 
         while(globalTime.currTime - startTime < duration)
         {
@@ -340,20 +368,20 @@ public class SceneManip : MonoBehaviour
 
             if(curRenderer != null) 
             {
+                //start from current color
                 newColor = curRenderer.material.color;
 
+                //built-in term options
                 if(value == "red") newColor.r = blend(percentComplete, Convert.ToSingle(terms[5]), Convert.ToSingle(terms[7]));
                 else if(value == "green") newColor.g = blend(percentComplete, Convert.ToSingle(terms[5]), Convert.ToSingle(terms[7]));
                 else if(value == "blue") newColor.b = blend(percentComplete, Convert.ToSingle(terms[5]), Convert.ToSingle(terms[7]));
                 else if(value == "alpha" || value == "transparency") newColor.a = blend(percentComplete, Convert.ToSingle(terms[5]), Convert.ToSingle(terms[7]));
                 else Debug.Log("Invalid renderer variable.");
 
-                //Debug.Log("New color: " + newColor);
                 curRenderer.material.color = newColor;
             }
             else Debug.Log("Renderer is null.");
 
-            //Debug.Log("Yield return null");
             yield return null;
         }
     }
@@ -387,16 +415,19 @@ public class SceneManip : MonoBehaviour
         }
         
         
-        //Create new instance of the given prefab
+        //Get given prefab
         curObject = Resources.Load<GameObject>("Prefabs/" + prefabName);
         if(curObject == null)
         {
             Debug.Log("Invalid Prefab.");
             return 1;
         }
-        curObject.tag = "Runtime";
-        //curObject.SetParent(GameObject.Find("Dynamic").transform);
+
+        //Instantiate prefab as new object
         GameObject NewGameObj = Instantiate(curObject) as GameObject;
+
+        //Mark object as created during runtime
+        NewGameObj.tag = "Runtime";
 
         //Apply all values to the new GameObject
         NewGameObj.name = objectName;
@@ -429,20 +460,15 @@ public class SceneManip : MonoBehaviour
             string[] component = terms[2].Split('.');
             string cellName = component[0].ToLower();
 
-            Component curComponent = curObject.GetComponent(component[0]);
-
             if(cellName == "width" || cellName == "length" || cellName == "height") setTransform(terms);
             else if(cellName == "red" || cellName == "green" || cellName == "blue" || cellName == "alpha" || cellName == "transparency") setRenderer(terms);
-            else if(curComponent != null)
-            {
-                if(cellName.Contains("transform")) setTransform(terms);
-                if(cellName.Contains("animator")) setAnimator(terms);
-                if(cellName.Contains("renderer")) setRenderer(terms);
-                return 0;
-            }
-            else Debug.Log("Can not set value, component not attached or wrong name: " + component[0]);
+            
+            if(cellName.Contains("transform")) setTransform(terms);
+            else if(cellName.Contains("animator")) setAnimator(terms);
+            else if(cellName.Contains("renderer")) setRenderer(terms);
+            //else Debug.Log("Can not set value, component not attached or wrong name: " + component[0]);
         }
-        return 1;
+        return 0;
     }
 
     int dynSetCell(string[] terms)
@@ -459,18 +485,13 @@ public class SceneManip : MonoBehaviour
             string[] component = terms[2].Split('.');
             string cellName = component[0].ToLower();
             
-            Component curComponent = curObject.GetComponent(component[0]);
             if(cellName == "width" || cellName == "length" || cellName == "height") StartCoroutine(dynSetTransform(terms));
             else if(cellName == "red" || cellName == "green" || cellName == "blue" || cellName == "alpha" || cellName == "transparency") StartCoroutine(dynSetRenderer(terms));
-            else if(curComponent != null)
-            {
-                if(cellName.Contains("transform")) StartCoroutine(dynSetTransform(terms));
-                if(cellName.Contains("renderer")) StartCoroutine(dynSetRenderer(terms));
-                return 0;
-            }
-            else Debug.Log("Can not set value, invalid component name.");
+            
+            if(cellName.Contains("transform")) StartCoroutine(dynSetTransform(terms));
+            else if(cellName.Contains("renderer")) StartCoroutine(dynSetRenderer(terms));
         }
-        return 1;
+        return 0;
     }
 
     //Destroys the specified object
@@ -500,9 +521,6 @@ public class SceneManip : MonoBehaviour
         pathObject.AddComponent<PathCreator>();
         PathCreator pathCreator = pathObject.GetComponent<PathCreator>() as PathCreator;
         BezierPath path = pathCreator.bezierPath;
-        
-        //start building on the new path with the first point of the first path component
-        //Vector3 curPoint = GameObject.Find(terms[3].Remove(0, 1)).GetComponent<PathCreator>().bezierPath.GetPointsInSegment(0)[0];
 
         //start building on the new path from the path origin
         Vector3 curPoint = new Vector3(0, 0, 0);
@@ -516,9 +534,6 @@ public class SceneManip : MonoBehaviour
             string pathName = terms[i].Remove(0, 1);
             BezierPath pathToAdd = GameObject.Find(pathName).GetComponent<PathCreator>().bezierPath;
             
-            //Vector3 pos = GameObject.Find(pathName).transform.position;
-            //Debug.Log(pathName + " has " + pathToAdd.NumAnchorPoints + " segments at " + pos);
-            
             for(int j = 1; j < pathToAdd.NumAnchorPoints; j++)
             {
                 //get points in current segment(0 and 3 are anchors, 1 and 2 are controls)
@@ -526,7 +541,6 @@ public class SceneManip : MonoBehaviour
 
                 //get distance between anchor points in current segment
                 Vector3 dist = (points[3] - points[0]) * sign;
-                //Debug.Log("Dist = " + dist);
                     
                 //add segment to constructed path by distance in current segment
                 path.AddSegmentToEnd(curPoint + dist);
@@ -537,7 +551,6 @@ public class SceneManip : MonoBehaviour
 
                 //set current point to new point in constructed path
                 curPoint = curPoint + dist;
-                //Debug.Log("New curPoint = " + curPoint);
             }
         }
 
@@ -548,7 +561,7 @@ public class SceneManip : MonoBehaviour
         return 0;
     }
 
-    //Applies an already existing path to the specified object
+    //Puts the specifeied object on the specified path
     int move(string[] terms)
     {
         //Test for minimum terms
@@ -561,7 +574,10 @@ public class SceneManip : MonoBehaviour
         {
             //Initialize path script
             curObject = GameObject.Find(terms[1]);
-            PathFollower curFollower = curObject.GetComponent<PathFollower>() as PathFollower;
+            
+            //Get PathFollower component if ther is one, and add one if there isn't
+            curObject.TryGetComponent<PathFollower>(out PathFollower curFollower);
+            if(curFollower == null) curFollower = curObject.AddComponent<PathFollower>() as PathFollower;
             curFollower.enabled = true;
 
             //Assign path by name
@@ -575,14 +591,10 @@ public class SceneManip : MonoBehaviour
 
             curFollower.endOfPathInstruction = EndOfPathInstruction.Stop;
 
-            //curFollower.globalTime = globalTime;
             float progress = (globalTime.currTime - curCommand.time) / Convert.ToSingle(terms[3]);
-            //Debug.Log(progress);
-            //curFollower.
             float distance = progress * curCreator.path.length;
-            //Debug.Log(distance);
+
             curFollower.offsetPosition = distance;
-            //curFollower.offsetPosition = curCreator.path.GetPointAtDistance(distance, curFollower.endOfPathInstruction);
         }
         return 0;
     }
@@ -599,7 +611,12 @@ public class SceneManip : MonoBehaviour
         else
         {
             curObject = GameObject.Find(terms[1]);
-            curObject.GetComponent<PathFollower>().pathCreator = null;
+            
+            PathFollower curFollower = curObject.GetComponent<PathFollower>();
+
+            //Ensure object is following a path
+            if(curFollower != null) curFollower.pathCreator = null;
+            else Debug.Log(terms[1] + " is not following a path.");
         }
         
         return 0;
@@ -698,9 +715,6 @@ public class SceneManip : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        //curObject = GameObject.Find("Car");
-        //Debug.Log(curObject.GetComponent("Animator"));
-
         //get list for entire input file
         commandList = new CommandList(textPath);
 
@@ -712,7 +726,6 @@ public class SceneManip : MonoBehaviour
 
         int linesRemoved = 0;
         string bounds = commandList.functions[mainFunction];
-        //Debug.Log("Building " + mainFunction + ", bounds: " + bounds);
         int lower = Convert.ToInt32(bounds.Split('-')[0]);
         int upper = Convert.ToInt32(bounds.Split('-')[1]);
         
@@ -737,12 +750,7 @@ public class SceneManip : MonoBehaviour
         }        
 
         commandList.commands = commandList.commands.OrderBy(n => n.time).ToList();
-        //foreach(Command command in commandList.commands) Debug.Log(command.time + " " + command.line);
-        //Debug.Log("________________________________________");
-
-        //Debug.Log("0: " + commandList.getIndexAtTime(0) + "| 1500: " + commandList.getIndexAtTime(1500f));
-
-        //GlobalTimeScript.runtime = commandList.commands[commandList.commands.Count - 1].time;
+        
         globalTime.ResetSlider(commandList.commands[commandList.commands.Count - 1].time);
     }
 
@@ -815,19 +823,14 @@ public class SceneManip : MonoBehaviour
                 //Reset follow camera target list
                 switchCamera.clearTargets();
 
-                //execute commands up to current index
+                //Execute commands up to current index
                 index = commandList.getIndexAtTime(globalTime.currTime);
                 for(int i = 0; i < index; i++)
                 {
                     curCommand = commandList.commands[i];
                     if(curCommand.args[0] != "PAUSE") 
                     {  
-                        if(curCommand.args[0] == "MOVE")
-                        {
-
-                        }
-
-                        //start cell updates at current time
+                        //Start cell updates at current time
                         if(curCommand.args[0] == "DYNUPDATECELL") 
                         {
                             float offset = globalTime.currTime - curCommand.time;
@@ -835,12 +838,11 @@ public class SceneManip : MonoBehaviour
                             
                             string[] newArgs = new string[12];
 
-                            //if duration already passed
+                            //If duration already passed
                             if(percentComplete >= 1)
                             {
-                                //call as SETOBJCELL
+                                //Call as SETOBJCELL(make change instant)
                                 //Debug.Log("Past duration: " + offset + " > " + Convert.ToSingle(curCommand.args[3]));
-                                
                                 newArgs[1] = curCommand.args[1];
                                 newArgs[2] = curCommand.args[2];
 
@@ -859,9 +861,8 @@ public class SceneManip : MonoBehaviour
                             }
                             else
                             {
-                                //call with adjusted partial values
+                                //Call with adjusted partial values
                                 //Debug.Log("Within duration: " + offset + " < " + Convert.ToSingle(curCommand.args[3]));
-                                
                                 newArgs[1] = curCommand.args[1];
                                 newArgs[2] = curCommand.args[2];
                                 newArgs[4] = curCommand.args[4];
@@ -900,7 +901,7 @@ public class SceneManip : MonoBehaviour
                         }
                         else execute(curCommand.line, curCommand.args);
 
-                        //set animator to current time
+                        //Set animator to current time
                         if(curCommand.line.Contains("Animator")) 
                         {
                             Animator anim = GameObject.Find(curCommand.args[1]).GetComponent<Animator>();
@@ -916,14 +917,17 @@ public class SceneManip : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        //If the time slider is not currently being controlled
         if(!globalTime.isBeingControlledByUser)
         {
+            //If the time slider was just changed, start the time change process
             if(globalTime.timeChanged)
             {
+                //Always upause time upon time slider change
                 Debug.Log("Time change detected.");
                 if(PauseScript.paused) pauseTime.PauseFunction();
 
-                //mark created objects for destruction at end of frame
+                //Mark created objects for destruction(happens at the end of current frame)
                 GameObject[] createdObjects = GameObject.FindGameObjectsWithTag("Runtime");
                 foreach(GameObject obj in createdObjects) 
                 {
@@ -931,19 +935,19 @@ public class SceneManip : MonoBehaviour
                     if(obj != null) Destroy(obj);
                 }
 
-                //have to wait one frame for old object to destroy, and then execute commands
+                //Have to wait one frame for old objects to destroy, and then execute commands
                 StartCoroutine(waitOneFrame());
 
                 globalTime.timeChanged = false;
-
             }
 
+            //if in the range of commands and not in the command catch up process
             if(index < commandList.commands.Count && !waited)
             {
                 //Get the current command
                 curCommand = commandList.commands[index];
 
-                //if(Time.time > curCommand.time)
+                //Execute it and move to the next one if it is time
                 if(globalTime.currTime > curCommand.time)
                 {
                     execute(curCommand.line, curCommand.args);
