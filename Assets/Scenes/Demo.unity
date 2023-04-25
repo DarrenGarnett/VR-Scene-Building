@@ -190,7 +190,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 400008, guid: ca6a542169d8e474aa2c2cb47423839a, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -13.88
+      value: -14
       objectReference: {fileID: 0}
     - target: {fileID: 400008, guid: ca6a542169d8e474aa2c2cb47423839a, type: 3}
       propertyPath: m_LocalPosition.y
@@ -4266,7 +4266,7 @@ MonoBehaviour:
   pauseTime: {fileID: 1021207902}
   switchCamera: {fileID: 1454957422}
   textPath: Assets/Text Files/demo.txt
-  mainFunction: test
+  mainFunction: scale
 --- !u!4 &1655681583
 Transform:
   m_ObjectHideFlags: 0

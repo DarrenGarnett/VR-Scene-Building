@@ -16,6 +16,7 @@ public class Command
     public string line;
     public string[] args;
     public float time;
+    public float timeScale;
 }
 
 public class CommandList
@@ -23,8 +24,19 @@ public class CommandList
     public Dictionary<string, string> functions = new Dictionary<string, string>();
     public List<string> referenceList = new List<string>();
     public List<Command> commands = new List<Command>();
-    
+
     public CommandList(string file)
+    {
+        float scale = 1;
+        initList(file, scale);
+    }
+
+    public CommandList(string file, float scale)
+    {
+        initList(file, scale);
+    }
+    
+    private void initList(string file, float scale)
     {
         if(File.Exists(file)) 
         {
@@ -37,6 +49,7 @@ public class CommandList
                 if(!command.Contains("//") && command != "") lines.Add(command);
             }
 
+            //float curTime = 0, curScale = 1, prevScale = 1, scaleChangeTime = -1;
             float curTime = 0;
             int curLine = 0, startLine = 0;
             foreach(string line in lines)
@@ -47,6 +60,13 @@ public class CommandList
                 
 
                 if(line.Split(' ')[0] == "TIME") curTime = Convert.ToSingle(temp.args[1]);
+                /*else if(line.Contains("TIMESCALE")) 
+                {
+                    scaleChangeTime = curTime;
+                    //Debug.Log("Time scale changed at " + scaleChangeTime);
+                    prevScale = curScale;
+                    curScale = Convert.ToSingle(temp.args[1]);
+                }*/
                 else if(line.Contains("INCLUDE")) referenceList.Add(temp.args[1]);
                 else if(line.Contains("FUNCTION")) 
                 {
@@ -59,7 +79,14 @@ public class CommandList
                 }
                 else 
                 {
-                    temp.time = curTime;
+                    //if(scaleChangeTime >= 0) temp.time = ((curTime - scaleChangeTime) / curScale) + scaleChangeTime;
+                    //else temp.time = curTime;
+                    //Debug.Log("((" + curTime + "-" + scaleChangeTime + ") / " + curScale + ") + (" + scaleChangeTime + " / " + prevScale + ")");
+                    //temp.time = ((curTime - scaleChangeTime) / curScale) + (scaleChangeTime / prevScale);
+                    temp.time = curTime / scale;
+                    temp.timeScale = scale;
+                    //Debug.Log("S:" + temp.timeScale + " " + temp.time + ": " + temp.line);
+
                     commands.Add(temp);
                     curLine++;
                 }
@@ -166,10 +193,10 @@ public class SceneManip : MonoBehaviour
         return (percentComplete * (final - init)) + init;
     }
 
-    Vector3 dynChangeVec(GameObject dynObject, Vector3 inVec, string[] terms, float startTime)
+    Vector3 dynChangeVec(GameObject dynObject, Vector3 inVec, string[] terms, float startTime, float duration)
     {
         string[] component = terms[2].Split('.');
-        float duration = Convert.ToSingle(terms[3]);
+        //float duration = Convert.ToSingle(terms[3]);
 
         //float timeSinceStart = Time.time - startTime;
         float timeSinceStart = globalTime.currTime - startTime;
@@ -197,13 +224,13 @@ public class SceneManip : MonoBehaviour
         return curVec;
     }
 
-    IEnumerator dynSetTransform(string[] terms)
+    IEnumerator dynSetTransform(string[] terms, float timeScale)
     {
         //Debug.Log("Dynamically updating transform...");
         string[] component = terms[2].Split('.');
         //foreach(string part in component) Debug.Log(part);
 
-        float duration = Convert.ToSingle(terms[3]);
+        float duration = Convert.ToSingle(terms[3]) / timeScale;
         //float startTime = Time.time;
         float startTime = globalTime.currTime;
         GameObject dynObject = curObject;
@@ -215,21 +242,21 @@ public class SceneManip : MonoBehaviour
                 case "position":
                     while(globalTime.currTime - startTime < duration)
                     {
-                        if(dynObject != null) dynObject.transform.position = dynChangeVec(dynObject, dynObject.transform.position, terms, startTime);
+                        if(dynObject != null) dynObject.transform.position = dynChangeVec(dynObject, dynObject.transform.position, terms, startTime, duration);
                         yield return null;
                     }
                     break;
                 case "rotation":
                     while(globalTime.currTime - startTime < duration)
                     {
-                        if(dynObject != null) dynObject.transform.eulerAngles = dynChangeVec(dynObject, dynObject.transform.eulerAngles, terms, startTime);
+                        if(dynObject != null) dynObject.transform.eulerAngles = dynChangeVec(dynObject, dynObject.transform.eulerAngles, terms, startTime, duration);
                         yield return null;
                     }
                     break;
                 case "scale":
                     while(globalTime.currTime - startTime < duration)
                     {
-                        if(dynObject != null) dynObject.transform.localScale = dynChangeVec(dynObject, dynObject.transform.localScale, terms, startTime);
+                        if(dynObject != null) dynObject.transform.localScale = dynChangeVec(dynObject, dynObject.transform.localScale, terms, startTime, duration);
                         yield return null;
                     }
                     break;
@@ -247,7 +274,7 @@ public class SceneManip : MonoBehaviour
                 case "height":
                     while(globalTime.currTime - startTime < duration)
                     {
-                        if(dynObject != null) dynObject.transform.localScale = dynChangeVec(dynObject, dynObject.transform.localScale, terms, startTime);
+                        if(dynObject != null) dynObject.transform.localScale = dynChangeVec(dynObject, dynObject.transform.localScale, terms, startTime, duration);
                         yield return null;
                     }
                     break;
@@ -258,11 +285,12 @@ public class SceneManip : MonoBehaviour
         }
     }
 
-    void setAnimator(string[] terms)
+    void setAnimator(string[] terms, float timeScale)
     {
         //AnimationHandler is used to pause animations alongside the scene
         //If there is no AnimationHandler component on the object, add it
         if(!curObject.TryGetComponent<AnimationHandler>(out AnimationHandler animHandler)) curObject.AddComponent<AnimationHandler>();
+        curObject.GetComponent<AnimationHandler>().speed = timeScale;
 
         //Check for too few terms
         if(terms.Count() < 4)
@@ -332,9 +360,9 @@ public class SceneManip : MonoBehaviour
         curRenderer.material.color = newColor;
     }
 
-    IEnumerator dynSetRenderer(string[] terms)
+    IEnumerator dynSetRenderer(string[] terms, float timeScale)
     {
-        float duration = Convert.ToSingle(terms[3]);
+        float duration = Convert.ToSingle(terms[3]) / timeScale;
         float startTime = globalTime.currTime;
 
         Renderer curRenderer = curObject.GetComponent<Renderer>();
@@ -446,7 +474,7 @@ public class SceneManip : MonoBehaviour
         return 0;
     }
 
-    int setCell(string[] terms)
+    int setCell(string[] terms, float timeScale)
     {
         if(terms.Count() < 4)
         {
@@ -464,14 +492,14 @@ public class SceneManip : MonoBehaviour
             else if(cellName == "red" || cellName == "green" || cellName == "blue" || cellName == "alpha" || cellName == "transparency") setRenderer(terms);
             
             if(cellName.Contains("transform")) setTransform(terms);
-            else if(cellName.Contains("animator")) setAnimator(terms);
+            else if(cellName.Contains("animator")) setAnimator(terms, timeScale);
             else if(cellName.Contains("renderer")) setRenderer(terms);
             //else Debug.Log("Can not set value, component not attached or wrong name: " + component[0]);
         }
         return 0;
     }
 
-    int dynSetCell(string[] terms)
+    int dynSetCell(string[] terms, float timeScale)
     {
         if(terms.Count() < 8)
         {
@@ -485,11 +513,11 @@ public class SceneManip : MonoBehaviour
             string[] component = terms[2].Split('.');
             string cellName = component[0].ToLower();
             
-            if(cellName == "width" || cellName == "length" || cellName == "height") StartCoroutine(dynSetTransform(terms));
-            else if(cellName == "red" || cellName == "green" || cellName == "blue" || cellName == "alpha" || cellName == "transparency") StartCoroutine(dynSetRenderer(terms));
+            if(cellName == "width" || cellName == "length" || cellName == "height") StartCoroutine(dynSetTransform(terms, timeScale));
+            else if(cellName == "red" || cellName == "green" || cellName == "blue" || cellName == "alpha" || cellName == "transparency") StartCoroutine(dynSetRenderer(terms, timeScale));
             
-            if(cellName.Contains("transform")) StartCoroutine(dynSetTransform(terms));
-            else if(cellName.Contains("renderer")) StartCoroutine(dynSetRenderer(terms));
+            if(cellName.Contains("transform")) StartCoroutine(dynSetTransform(terms, timeScale));
+            else if(cellName.Contains("renderer")) StartCoroutine(dynSetRenderer(terms, timeScale));
         }
         return 0;
     }
@@ -562,7 +590,7 @@ public class SceneManip : MonoBehaviour
     }
 
     //Puts the specifeied object on the specified path
-    int move(string[] terms)
+    int move(string[] terms, float timeScale)
     {
         //Test for minimum terms
         if(terms.Count() < 4)
@@ -587,11 +615,11 @@ public class SceneManip : MonoBehaviour
             curFollower.pathCreator = curCreator;
 
             //Set cycle duration
-            curFollower.cycleDuration = Convert.ToSingle(terms[3]);
+            curFollower.cycleDuration = Convert.ToSingle(terms[3]) / timeScale;
 
             curFollower.endOfPathInstruction = EndOfPathInstruction.Stop;
 
-            float progress = (globalTime.currTime - curCommand.time) / Convert.ToSingle(terms[3]);
+            float progress = (globalTime.currTime - curCommand.time);// / Convert.ToSingle(terms[3]);
             float distance = progress * curCreator.path.length;
 
             curFollower.offsetPosition = distance;
@@ -661,7 +689,7 @@ public class SceneManip : MonoBehaviour
     }
     
     //Determines which command is to be executed
-    int execute(string command, string[] terms)
+    int execute(string command, string[] terms, float timeScale)
     {
         //Initialize return value
         int result = 0;
@@ -678,19 +706,19 @@ public class SceneManip : MonoBehaviour
                 result = unload(terms);
                 break;
             case "SETOBJCELL":
-                result = setCell(terms);
+                result = setCell(terms, timeScale);
                 break;
             case "DESTROY":
                 result = destroy(terms);
                 break;
             case "DYNUPDATECELL":
-                result = dynSetCell(terms);
+                result = dynSetCell(terms, timeScale);
                 break;
             case "PATH":
                 result = path(terms);
                 break;
             case "MOVE":
-                result = move(terms);
+                result = move(terms, timeScale);
                 break;
             case "REMOVEFROMPATH":
                 result = removeFromPath(terms);
@@ -699,7 +727,7 @@ public class SceneManip : MonoBehaviour
                 result = pause(terms);
                 break;
             case "TIMESCALE":
-                result = setTimescale(terms);
+                //result = setTimescale(terms);
                 break;
             case "LOOKAT":
                 result = setCamera(terms);
@@ -722,7 +750,7 @@ public class SceneManip : MonoBehaviour
         CommandList temp = new CommandList(textPath);
 
         //add called function lines to the main list
-        getReferenceFunctions(temp, mainFunction, 0);
+        getReferenceFunctions(temp, mainFunction, 0, 1);
 
         int linesRemoved = 0;
         string bounds = commandList.functions[mainFunction];
@@ -750,11 +778,12 @@ public class SceneManip : MonoBehaviour
         }        
 
         commandList.commands = commandList.commands.OrderBy(n => n.time).ToList();
+        foreach(Command c in commandList.commands) Debug.Log(c.time + ": " + c.line);
         
         globalTime.ResetSlider(commandList.commands[commandList.commands.Count - 1].time);
     }
 
-    void getReferenceFunctions(CommandList curList, string functionName, float curTime)
+    void getReferenceFunctions(CommandList curList, string functionName, float curTime, float curMult)
     {
         string bounds = curList.functions[functionName];
         //Debug.Log(bounds);
@@ -769,14 +798,20 @@ public class SceneManip : MonoBehaviour
             if(curCommand.line.Contains("CALL"))
             {
                 //Debug.Log(curCommand.line + " in curList...");
+                bool functionFound = false;
                 foreach(string fileInfo in curList.referenceList)
                 {
-                    CommandList reference = new CommandList("Assets/Text Files/" + fileInfo);
+                    //Debug.Log("In " + fileInfo + " looking for " + curCommand.args[1]);
+                    float timeMult = curMult;
+                    if(curCommand.args.Count() >= 3) timeMult *= Convert.ToSingle(curCommand.args[2]);
+                    //Debug.Log("Reference mult = " + timeMult);
+                    CommandList reference = new CommandList("Assets/Text Files/" + fileInfo, timeMult);
                     //Debug.Log("Opening " + fileInfo + " for referencing...");
 
                     if(reference.functions.ContainsKey(curCommand.args[1]))
                     {
                         //Debug.Log("Getting reference lines...");
+
                         string refBounds = reference.functions[curCommand.args[1]];
                         //Debug.Log(refBounds);
                         int refLower = Convert.ToInt32(refBounds.Split('-')[0]);
@@ -789,18 +824,24 @@ public class SceneManip : MonoBehaviour
                             if(refCommand.line.Contains("CALL")) 
                             {
                                 //Debug.Log("Recurse");
-                                getReferenceFunctions(reference, curCommand.args[1], curCommand.time + curTime);
+                                getReferenceFunctions(reference, curCommand.args[1], curCommand.time + curTime, timeMult);
                             }
                             else 
                             {
+                                //refCommand.time /= timeMult;
                                 refCommand.time += curTime + curCommand.time;
                                 //Debug.Log("Adding " + refCommand.time + " " + refCommand.line);
                                 commandList.commands.Add(refCommand);
                             }
                         }
+                        
+                        //Debug.Log(curCommand.args[1] + " found in " + fileInfo);
+                        functionFound = true;
+                        break;
                     }
-                    else Debug.Log("Invalid function name.");
                 }
+                
+                if(!functionFound) Debug.LogError("Couldn't find called function '" + curCommand.args[1] + "' in included files.");
             }
         }
     }
@@ -856,8 +897,8 @@ public class SceneManip : MonoBehaviour
 
                                 string line = "";
                                 foreach(string arg in newArgs) line += arg + " ";
-                                Debug.Log("SETOBJCELL" + line);
-                                setCell(newArgs);
+                                //Debug.Log("SETOBJCELL" + line);
+                                setCell(newArgs, curCommand.timeScale);
                             }
                             else
                             {
@@ -895,11 +936,11 @@ public class SceneManip : MonoBehaviour
 
                                 string line = "";
                                 foreach(string arg in newArgs) line += arg + " ";
-                                Debug.Log("DYNUPDATECELL" + line);
-                                dynSetCell(newArgs);
+                                //Debug.Log("DYNUPDATECELL" + line);
+                                dynSetCell(newArgs, curCommand.timeScale);
                             }
                         }
-                        else execute(curCommand.line, curCommand.args);
+                        else execute(curCommand.line, curCommand.args, curCommand.timeScale);
 
                         //Set animator to current time
                         if(curCommand.line.Contains("Animator")) 
@@ -950,7 +991,7 @@ public class SceneManip : MonoBehaviour
                 //Execute it and move to the next one if it is time
                 if(globalTime.currTime > curCommand.time)
                 {
-                    execute(curCommand.line, curCommand.args);
+                    execute(curCommand.line, curCommand.args, curCommand.timeScale);
                     index++;
                 }
             }

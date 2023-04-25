@@ -1,8 +1,12 @@
 INCLUDE AnotherReference.txt
 
 FUNCTION createCar
+TIME 6
 CREATE P5 Vehicles_PizzaCar 15 10 0
+TIME 12
 CREATE P6 Vehicles_PizzaCar 20 10 0
+TIME 18
+CREATE P7 Vehicles_PizzaCar 25 10 0
 END createCar
 
 FUNCTION moveCar

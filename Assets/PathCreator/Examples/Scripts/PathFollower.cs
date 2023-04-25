@@ -8,7 +8,7 @@ namespace PathCreation.Examples
     {
         public PathCreator pathCreator;
         public EndOfPathInstruction endOfPathInstruction;
-        public float speed = 100;
+        public float speed;
         float distanceTravelled;
         Animator followerAnimator;
         public float offsetPosition;
@@ -35,6 +35,7 @@ namespace PathCreation.Examples
 
                 transform.position = prevPathOffset;
 
+                speed = 1;
                 //Debug.Log(pathCreator.path.length);
                 //Debug.Log(cycleDuration);
                 //Debug.Log("Path creator not null and initialized");

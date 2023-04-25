@@ -1,8 +1,14 @@
+INCLUDE demo.txt
 INCLUDE Reference.txt
+INCLUDE AnotherReference.txt
+
+FUNCTION scale
+CALL test 2
+END scale
 
 FUNCTION test
-TIMESCALE 2
 SETOBJCELL Vehicles_HotdogTruck Animator MGR
+DYNUPDATECELL Vehicles_HotdogTruck Transform.position.x 3 FROM -14 TO 18
 CREATE Pete Worker -10 0 -2
 SETOBJCELL Pete Transform.scale 2 2 2
 CREATE Car Vehicles_PizzaCar 6 0 -7
@@ -13,15 +19,13 @@ SETOBJCELL NewPath Transform.position 6 0 -7
 TIME 3
 SETOBJCELL Pete Animator Walk
 TIME 8
-TIMESCALE 1
 SETOBJCELL Pete Animator Empty
 SETOBJCELL Pete Transform.rotation.y 90
 TIME 9
 DESTROY Pete
 LOOKAT Car
-MOVE Car NewPath 2
-TIME 10
-TIMESCALE 0.25
-TIME 11
+MOVE Car NewPath 3
+TIME 12
 DESTROY Car
+CALL createCar 3
 END test
