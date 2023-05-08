@@ -1,0 +1,8 @@
+INCLUDE demo.txt
+
+FUNCTION main
+CREATE Car Vehicles_PizzaCar 6 0 -7
+CREATE Car2 Vehicles_PizzaCar 6 0 7
+SETOBJCELL Car2.car_fl_wheel_mesh Transform.position 0 0 0
+CALL test 5
+END main

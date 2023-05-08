@@ -38,9 +38,9 @@ public class CommandList
     
     private void initList(string file, float scale)
     {
-        if(File.Exists(file)) 
+        if(File.Exists("Assets/Text Files/" + file)) 
         {
-            string[] input = System.IO.File.ReadAllLines(file);
+            string[] input = System.IO.File.ReadAllLines("Assets/Text Files/" + file);
 
             List<string> lines = new List<string>();
 
@@ -48,6 +48,8 @@ public class CommandList
             {
                 if(!command.Contains("//") && command != "") lines.Add(command);
             }
+
+            referenceList.Add(file);
 
             //float curTime = 0, curScale = 1, prevScale = 1, scaleChangeTime = -1;
             float curTime = 0;
@@ -119,12 +121,17 @@ public class SceneManip : MonoBehaviour
     public SwitchCameraScript switchCamera;
     private GameObject curObject;
     //private string[] commands;
-    public string textPath;
     private int index = 0;
     private Command curCommand;
     private CommandList commandList;
-    public string mainFunction;
     private bool waited = false;
+
+    void setCurGameObject(string name)
+    {
+        name = name.Replace('.', '/');
+        Debug.Log(name);
+        curObject = GameObject.Find(name);
+    }
 
     Vector3 changeVec(Vector3 inVec, string[] terms)
     {
@@ -483,7 +490,8 @@ public class SceneManip : MonoBehaviour
         }
         else
         {
-            curObject = GameObject.Find(terms[1]);
+            //curObject = GameObject.Find(terms[1]);
+            setCurGameObject(terms[1]);
 
             string[] component = terms[2].Split('.');
             string cellName = component[0].ToLower();
@@ -508,7 +516,8 @@ public class SceneManip : MonoBehaviour
         }
         else
         {
-            curObject = GameObject.Find(terms[1]);
+            //curObject = GameObject.Find(terms[1]);
+            setCurGameObject(terms[1]);
 
             string[] component = terms[2].Split('.');
             string cellName = component[0].ToLower();
@@ -533,7 +542,8 @@ public class SceneManip : MonoBehaviour
         }
         else
         {
-            curObject = GameObject.Find(terms[1]);
+            //curObject = GameObject.Find(terms[1]);
+            setCurGameObject(terms[1]);
             switchCamera.removeTarget(curObject);
             Destroy(curObject);
         }
@@ -601,7 +611,8 @@ public class SceneManip : MonoBehaviour
         else
         {
             //Initialize path script
-            curObject = GameObject.Find(terms[1]);
+            //curObject = GameObject.Find(terms[1]);
+            setCurGameObject(terms[1]);
             
             //Get PathFollower component if ther is one, and add one if there isn't
             curObject.TryGetComponent<PathFollower>(out PathFollower curFollower);
@@ -638,7 +649,8 @@ public class SceneManip : MonoBehaviour
         }
         else
         {
-            curObject = GameObject.Find(terms[1]);
+            //curObject = GameObject.Find(terms[1]);
+            setCurGameObject(terms[1]);
             
             PathFollower curFollower = curObject.GetComponent<PathFollower>();
 
@@ -668,7 +680,8 @@ public class SceneManip : MonoBehaviour
 
     int setCamera(string[] terms)
     {
-        curObject = GameObject.Find(terms[1]);
+        //curObject = GameObject.Find(terms[1]);
+        setCurGameObject(terms[1]);
         Renderer curRend = curObject.GetComponent<Renderer>();
 
         if(curObject != null)
@@ -694,7 +707,7 @@ public class SceneManip : MonoBehaviour
         //Initialize return value
         int result = 0;
 
-        //Debug.Log(command);
+        Debug.Log(command);
         
         //Determine command by name
         switch(terms[0])
@@ -744,16 +757,16 @@ public class SceneManip : MonoBehaviour
     void Start()
     {
         //get list for entire input file
-        commandList = new CommandList(textPath);
+        commandList = new CommandList("main.txt");
 
         //initial list copy for reference
-        CommandList temp = new CommandList(textPath);
+        CommandList temp = new CommandList("main.txt");
 
         //add called function lines to the main list
-        getReferenceFunctions(temp, mainFunction, 0, 1);
+        getReferenceFunctions(temp, "main", 0, 1);
 
         int linesRemoved = 0;
-        string bounds = commandList.functions[mainFunction];
+        string bounds = commandList.functions["main"];
         int lower = Convert.ToInt32(bounds.Split('-')[0]);
         int upper = Convert.ToInt32(bounds.Split('-')[1]);
         
@@ -778,7 +791,7 @@ public class SceneManip : MonoBehaviour
         }        
 
         commandList.commands = commandList.commands.OrderBy(n => n.time).ToList();
-        foreach(Command c in commandList.commands) Debug.Log(c.time + ": " + c.line);
+        //foreach(Command c in commandList.commands) Debug.Log(c.time + ": " + c.line);
         
         globalTime.ResetSlider(commandList.commands[commandList.commands.Count - 1].time);
     }
@@ -805,7 +818,7 @@ public class SceneManip : MonoBehaviour
                     float timeMult = curMult;
                     if(curCommand.args.Count() >= 3) timeMult *= Convert.ToSingle(curCommand.args[2]);
                     //Debug.Log("Reference mult = " + timeMult);
-                    CommandList reference = new CommandList("Assets/Text Files/" + fileInfo, timeMult);
+                    CommandList reference = new CommandList(fileInfo, timeMult);
                     //Debug.Log("Opening " + fileInfo + " for referencing...");
 
                     if(reference.functions.ContainsKey(curCommand.args[1]))
@@ -989,7 +1002,7 @@ public class SceneManip : MonoBehaviour
                 curCommand = commandList.commands[index];
 
                 //Execute it and move to the next one if it is time
-                if(globalTime.currTime > curCommand.time)
+                if(globalTime.currTime >= curCommand.time)
                 {
                     execute(curCommand.line, curCommand.args, curCommand.timeScale);
                     index++;
