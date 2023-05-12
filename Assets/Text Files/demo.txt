@@ -1,5 +1,28 @@
 INCLUDE Reference.txt
 
+FUNCTION demo
+CREATE Crane Crane -15 3.5 10
+CREATE Container Container_Full 14 0 20
+SETOBJCELL Container Transform.scale 2 2 2
+PATH NewPath -DL +UR -L
+SETOBJCELL NewPath Transform.position -15 3.5 10
+MOVE Crane NewPath 3
+DYNUPDATECELL Crane Transform.rotation.y 1 FROM 0 TO -60
+TIME 1
+DYNUPDATECELL Crane Transform.rotation.y 1 FROM -60 TO 0
+TIME 3
+DYNUPDATECELL Crane.Rope Transform.scale.z 1 FROM 1 TO 1.2
+TIME 4
+//LOOKAT Container
+DYNUPDATECELL Crane.Rope Transform.scale.z 1 FROM 1.2 TO 1
+DYNUPDATECELL Container Transform.position.y 1 FROM 0 TO 1.2
+TIME 5
+DYNUPDATECELL Crane Transform.position.x 1 FROM 0 TO -10
+DYNUPDATECELL Container Transform.position.x 1 FROM 14 TO 4
+TIME 77
+DESTROY NewPath
+END demo
+
 FUNCTION test
 SETOBJCELL Vehicles_HotdogTruck Animator MGR
 DYNUPDATECELL Vehicles_HotdogTruck Transform.position.x 3 FROM -14 TO 18
@@ -9,7 +32,7 @@ CREATE Car Vehicles_PizzaCar 6 0 -7
 SETOBJCELL Car Transform.rotation.y 90
 SETOBJCELL Car Transform.rotation.y 90
 SETOBJCELL Pete Animator WorkOnDevice
-PATH NewPath RIGHTPASS +Path2 +Path3 -Path2
+PATH NewPath +Path2 +Path3 -Path2
 SETOBJCELL NewPath Transform.position 6 0 -7
 TIME 3
 SETOBJCELL Pete Animator Walk

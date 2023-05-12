@@ -129,7 +129,6 @@ public class SceneManip : MonoBehaviour
     void setCurGameObject(string name)
     {
         name = name.Replace('.', '/');
-        Debug.Log(name);
         curObject = GameObject.Find(name);
     }
 
@@ -493,16 +492,19 @@ public class SceneManip : MonoBehaviour
             //curObject = GameObject.Find(terms[1]);
             setCurGameObject(terms[1]);
 
-            string[] component = terms[2].Split('.');
-            string cellName = component[0].ToLower();
+            if(curObject != null)
+            {
+                string[] component = terms[2].Split('.');
+                string cellName = component[0].ToLower();
 
-            if(cellName == "width" || cellName == "length" || cellName == "height") setTransform(terms);
-            else if(cellName == "red" || cellName == "green" || cellName == "blue" || cellName == "alpha" || cellName == "transparency") setRenderer(terms);
-            
-            if(cellName.Contains("transform")) setTransform(terms);
-            else if(cellName.Contains("animator")) setAnimator(terms, timeScale);
-            else if(cellName.Contains("renderer")) setRenderer(terms);
-            //else Debug.Log("Can not set value, component not attached or wrong name: " + component[0]);
+                if(cellName == "width" || cellName == "length" || cellName == "height") setTransform(terms);
+                else if(cellName == "red" || cellName == "green" || cellName == "blue" || cellName == "alpha" || cellName == "transparency") setRenderer(terms);
+                
+                if(cellName.Contains("transform")) setTransform(terms);
+                else if(cellName.Contains("animator")) setAnimator(terms, timeScale);
+                else if(cellName.Contains("renderer")) setRenderer(terms);
+            }
+            else Debug.LogError("Unable to find '" + terms[1] + "' in '" + curCommand.line + "'");
         }
         return 0;
     }
@@ -519,14 +521,18 @@ public class SceneManip : MonoBehaviour
             //curObject = GameObject.Find(terms[1]);
             setCurGameObject(terms[1]);
 
-            string[] component = terms[2].Split('.');
-            string cellName = component[0].ToLower();
-            
-            if(cellName == "width" || cellName == "length" || cellName == "height") StartCoroutine(dynSetTransform(terms, timeScale));
-            else if(cellName == "red" || cellName == "green" || cellName == "blue" || cellName == "alpha" || cellName == "transparency") StartCoroutine(dynSetRenderer(terms, timeScale));
-            
-            if(cellName.Contains("transform")) StartCoroutine(dynSetTransform(terms, timeScale));
-            else if(cellName.Contains("renderer")) StartCoroutine(dynSetRenderer(terms, timeScale));
+            if(curObject != null)
+            {
+                string[] component = terms[2].Split('.');
+                string cellName = component[0].ToLower();
+                
+                if(cellName == "width" || cellName == "length" || cellName == "height") StartCoroutine(dynSetTransform(terms, timeScale));
+                else if(cellName == "red" || cellName == "green" || cellName == "blue" || cellName == "alpha" || cellName == "transparency") StartCoroutine(dynSetRenderer(terms, timeScale));
+                else if(cellName.Contains("transform")) StartCoroutine(dynSetTransform(terms, timeScale));
+                else if(cellName.Contains("renderer")) StartCoroutine(dynSetRenderer(terms, timeScale));
+                else Debug.LogError("Invalid component '" + cellName+ "' in '" + curCommand.line + "'");
+            }
+            else Debug.LogError("Unable to find '" + terms[1] + "' in '" + curCommand.line + "'");
         }
         return 0;
     }
@@ -553,48 +559,63 @@ public class SceneManip : MonoBehaviour
 
     int path(string[] terms)
     {
-        //initialize path to construct
-        GameObject pathObject = new GameObject(terms[1]);
-        pathObject.tag = "Runtime";
-        pathObject.AddComponent<PathCreator>();
-        PathCreator pathCreator = pathObject.GetComponent<PathCreator>() as PathCreator;
-        BezierPath path = pathCreator.bezierPath;
-
-        //start building on the new path from the path origin
-        Vector3 curPoint = new Vector3(0, 0, 0);
-        path.AddSegmentToEnd(curPoint);
-
-        //for each path component in terms
-        for(int i = 3; i < terms.Count(); i++)
+        bool segmentsValid = true;
+        for(int i = 2; i < terms.Count(); i++)
         {
-            //get data for current path component
-            int sign = Convert.ToInt32(terms[i][0] + "1");
-            string pathName = terms[i].Remove(0, 1);
-            BezierPath pathToAdd = GameObject.Find(pathName).GetComponent<PathCreator>().bezierPath;
-            
-            for(int j = 1; j < pathToAdd.NumAnchorPoints; j++)
+            string pathPath = terms[i].Remove(0, 1);
+            if(GameObject.Find(pathPath) == null)
             {
-                //get points in current segment(0 and 3 are anchors, 1 and 2 are controls)
-                Vector3[] points = pathToAdd.GetPointsInSegment(j);
-
-                //get distance between anchor points in current segment
-                Vector3 dist = (points[3] - points[0]) * sign;
-                    
-                //add segment to constructed path by distance in current segment
-                path.AddSegmentToEnd(curPoint + dist);
-
-                //set control points in added segment
-                path.SetPoint(path.NumPoints - 2, curPoint + ((points[2] - points[0]) * sign));
-                path.SetPoint(path.NumPoints - 3, curPoint + ((points[1] - points[0]) * sign));
-
-                //set current point to new point in constructed path
-                curPoint = curPoint + dist;
+                Debug.LogError("Invalid path segment '" + terms[i].Remove(0, 1) + "' in '" + curCommand.line + "'");
+                segmentsValid = false;
+                break;
             }
         }
 
-        //remove default segments(created when pathCreator initialized)
-        path.DeleteSegment(0);
-        path.DeleteSegment(1);
+        if(segmentsValid)
+        {
+            //initialize path to construct
+            GameObject pathObject = new GameObject(terms[1]);
+            pathObject.tag = "Runtime";
+            pathObject.AddComponent<PathCreator>();
+            PathCreator pathCreator = pathObject.GetComponent<PathCreator>() as PathCreator;
+            BezierPath path = pathCreator.bezierPath;
+
+            //start building on the new path from the path origin
+            Vector3 curPoint = new Vector3(0, 0, 0);
+            path.AddSegmentToEnd(curPoint);
+
+            //for each path component in terms
+            for(int i = 2; i < terms.Count(); i++)
+            {
+                //get data for current path component
+                int sign = Convert.ToInt32(terms[i][0] + "1");
+                string pathName = terms[i].Remove(0, 1);
+                BezierPath pathToAdd = GameObject.Find(pathName).GetComponent<PathCreator>().bezierPath;
+                
+                for(int j = 1; j < pathToAdd.NumAnchorPoints; j++)
+                {
+                    //get points in current segment(0 and 3 are anchors, 1 and 2 are controls)
+                    Vector3[] points = pathToAdd.GetPointsInSegment(j);
+
+                    //get distance between anchor points in current segment
+                    Vector3 dist = (points[3] - points[0]) * sign;
+                        
+                    //add segment to constructed path by distance in current segment
+                    path.AddSegmentToEnd(curPoint + dist);
+
+                    //set control points in added segment
+                    path.SetPoint(path.NumPoints - 2, curPoint + ((points[2] - points[0]) * sign));
+                    path.SetPoint(path.NumPoints - 3, curPoint + ((points[1] - points[0]) * sign));
+
+                    //set current point to new point in constructed path
+                    curPoint = curPoint + dist;
+                }
+            }
+
+            //remove default segments(created when pathCreator initialized)
+            path.DeleteSegment(0);
+            path.DeleteSegment(1);
+        }
 
         return 0;
     }
@@ -716,7 +737,7 @@ public class SceneManip : MonoBehaviour
                 result = create(terms);
                 break;
             case "END":
-                result = unload(terms);
+                //result = unload(terms);
                 break;
             case "SETOBJCELL":
                 result = setCell(terms, timeScale);
