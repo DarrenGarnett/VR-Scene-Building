@@ -24,16 +24,15 @@ public class CameraFollow : MonoBehaviour
             Renderer rend = target.GetComponent<Renderer>();
             if(rend != null)
             {
-                //get the facing direction for each axis
-                Vector3 directions = target.transform.forward + target.transform.right + target.transform.up;
-                //Debug.Log("Target bounds: " + rend.bounds.size);
-
                 //zoom by scroll input, with lower bound 1
                 zoom -= Input.mouseScrollDelta.y * zoomStep;
                 if(zoom < 1f) zoom = 1f;
+                
+                //get the facing direction for each axis
+                Vector3 directions = target.transform.forward + target.transform.right + target.transform.up;
 
                 //get camera offset for the top, back, left corner, regardless of orientation
-                locationOffset = rend.bounds.extents * 2f;
+                locationOffset = GetBounds(target).size;
                 locationOffset.x *= zoom * directions.x;
                 locationOffset.y *= zoom * directions.y;
                 locationOffset.z *= zoom * directions.z;
@@ -42,6 +41,7 @@ public class CameraFollow : MonoBehaviour
                 rotationOffset.x = 20;
                 rotationOffset.y = 210;
                 rotationOffset.z = 0;
+                
             }
             else 
             {
@@ -49,10 +49,7 @@ public class CameraFollow : MonoBehaviour
                 rotationOffset = new Vector3(0, 0, 0);
             }
 
-            Vector3 desiredPosition = target.transform.position + locationOffset;// + target.transform.rotation * locationOffset;
-            //Debug.Log("Camera view offset: " + locationOffset);
-            //Debug.Log("Target base position: " + target.transform.position);
-            //Debug.Log("Camera desired position: " + desiredPosition);
+            Vector3 desiredPosition = target.transform.position + locationOffset;
             Vector3 smoothedPosition = Vector3.Lerp(transform.position, desiredPosition, smoothSpeed);
             transform.position = smoothedPosition;
 
@@ -60,5 +57,36 @@ public class CameraFollow : MonoBehaviour
             Quaternion smoothedrotation = Quaternion.Lerp(transform.rotation, desiredrotation, smoothSpeed);
             transform.rotation = smoothedrotation;
         }
+    }
+
+    //source: https://forum.unity.com/threads/getting-the-bounds-of-the-group-of-objects.70979/
+    public static Bounds GetBounds(GameObject obj)
+    {
+        Bounds bounds = new Bounds();
+
+        Renderer[] renderers = obj.GetComponentsInChildren<Renderer>();
+
+        if(renderers.Length > 0)
+        {
+            //Find first enabled renderer to start encapsulate from it
+            foreach (Renderer renderer in renderers)
+            {
+                if (renderer.enabled)
+                {
+                    bounds = renderer.bounds;
+                     break;
+                }
+            }
+
+            //Encapsulate for all renderers
+            foreach (Renderer renderer in renderers)
+            {
+                if (renderer.enabled)
+                {
+                    bounds.Encapsulate(renderer.bounds);
+                }
+            }
+        }
+        return bounds;
     }
 }
