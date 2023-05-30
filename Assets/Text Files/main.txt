@@ -1,8 +1,6 @@
 INCLUDE demo.txt
 
 FUNCTION main
+//MOVE HotdogTruck CurvyLoop 5 ROTATION 0 180 0
 CALL demo
-DYNUPDATECELL HotdogTruck Transform.position.x 2 FROM -16 TO 16
-TIME 2
-DESTROY HotdogTruck
 END main

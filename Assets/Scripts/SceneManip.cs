@@ -655,6 +655,12 @@ public class SceneManip : MonoBehaviour
             float distance = progress * curCreator.path.length;
 
             curFollower.offsetPosition = distance;
+
+            if(terms.Count() >= 8)
+            {
+                Vector3 initAngles = new Vector3(Convert.ToSingle(terms[5]), Convert.ToSingle(terms[6]), Convert.ToSingle(terms[7]));
+                curFollower.offsetRotation = Quaternion.Euler(initAngles);
+            }
         }
         return 0;
     }
@@ -728,7 +734,7 @@ public class SceneManip : MonoBehaviour
         //Initialize return value
         int result = 0;
 
-        Debug.Log(command);
+        //Debug.Log(command);
         
         //Determine command by name
         switch(terms[0])

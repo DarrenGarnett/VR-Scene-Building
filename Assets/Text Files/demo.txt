@@ -6,10 +6,7 @@ CREATE Container Container_Full 14 0 20
 SETOBJCELL Container Transform.scale 2 2 2
 PATH NewPath -DL +UR -L
 SETOBJCELL NewPath Transform.position -15 3.5 10
-MOVE Crane NewPath 3
-DYNUPDATECELL Crane Transform.rotation.y 1 FROM 0 TO -60
-TIME 1
-DYNUPDATECELL Crane Transform.rotation.y 1 FROM -60 TO 0
+MOVE Crane NewPath 3 ROTATION 90 -90 0
 TIME 3
 DYNUPDATECELL Crane.Rope Transform.scale.z 1 FROM 1 TO 1.2
 TIME 4
@@ -19,8 +16,10 @@ DYNUPDATECELL Container Transform.position.y 1 FROM 0 TO 1.2
 TIME 5
 DYNUPDATECELL Crane Transform.position.x 1 FROM 0 TO -10
 DYNUPDATECELL Container Transform.position.x 1 FROM 14 TO 4
-TIME 77
+TIME 6
 DESTROY NewPath
+DESTROY Crane
+DESTROY Container
 END demo
 
 FUNCTION test
