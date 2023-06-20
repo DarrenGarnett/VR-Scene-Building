@@ -6,4 +6,13 @@ MOVE car CurvyLoop 5 ROTATION 0 180 0
 //MOVE HotdogTruck CurvyLoop 5 ROTATION 0 180 0
 TIME 5
 CALL demo
+//CALL 2
 END main
+
+FUNCTION 1
+TIME 1
+END 1
+
+FUNCTION 2
+TIME 2
+END 2

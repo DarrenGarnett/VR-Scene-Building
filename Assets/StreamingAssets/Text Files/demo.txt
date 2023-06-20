@@ -1,5 +1,3 @@
-INCLUDE Reference.txt
-
 FUNCTION demo
 CREATE Crane Crane -15 3.5 10
 CREATE Container Container_Full 14 0 20
@@ -10,7 +8,6 @@ MOVE Crane NewPath 3 ROTATION 90 -90 0
 TIME 3
 DYNUPDATECELL Crane.Rope Transform.scale.z 1 FROM 1 TO 1.2
 TIME 4
-//LOOKAT Container
 DYNUPDATECELL Crane.Rope Transform.scale.z 1 FROM 1.2 TO 1
 DYNUPDATECELL Container Transform.position.y 1 FROM 0 TO 1.2
 TIME 5
@@ -20,6 +17,7 @@ TIME 6
 DESTROY NewPath
 DESTROY Crane
 DESTROY Container
+//CALL test
 END demo
 
 FUNCTION test
@@ -44,10 +42,4 @@ LOOKAT Car
 MOVE Car NewPath 3
 TIME 12
 DESTROY Car
-CALL createCar 3
-CALL test2
 END test
-
-FUNCTION test2
-CREATE Pete Worker -10 0 -2
-END test2

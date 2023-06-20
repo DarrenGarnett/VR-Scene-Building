@@ -38,9 +38,9 @@ public class CommandList
     
     private void initList(string file, float scale)
     {
-        if(File.Exists("Assets/Text Files/" + file)) 
+        if(File.Exists(Application.streamingAssetsPath + "/Text Files/" + file)) 
         {
-            string[] input = System.IO.File.ReadAllLines("Assets/Text Files/" + file);
+            string[] input = System.IO.File.ReadAllLines(Application.streamingAssetsPath + "/Text Files/" + file);
 
             List<string> lines = new List<string>();
 
@@ -69,7 +69,7 @@ public class CommandList
                 /*else if(line.Contains("TIMESCALE")) 
                 {
                     scaleChangeTime = curTime;
-                    //Debug.Log("Time scale changed at " + scaleChangeTime);
+                    //Debug.LogError("Time scale changed at " + scaleChangeTime);
                     prevScale = curScale;
                     curScale = Convert.ToSingle(temp.args[1]);
                 }*/
@@ -80,31 +80,32 @@ public class CommandList
                 }
                 else if(line.Contains("END")) 
                 {
-                    functions.Add(temp.args[1], startLine.ToString() + "-" + curLine.ToString());
+                    functions.Add(temp.args[1], startLine.ToString() + "-" + curLine.ToString() + "-" + maxTime);
                     curTime = 0;
+                    maxTime = 0;
                 }
                 else 
                 {
                     //if(scaleChangeTime >= 0) temp.time = ((curTime - scaleChangeTime) / curScale) + scaleChangeTime;
                     //else temp.time = curTime;
-                    //Debug.Log("((" + curTime + "-" + scaleChangeTime + ") / " + curScale + ") + (" + scaleChangeTime + " / " + prevScale + ")");
+                    //Debug.LogError("((" + curTime + "-" + scaleChangeTime + ") / " + curScale + ") + (" + scaleChangeTime + " / " + prevScale + ")");
                     //temp.time = ((curTime - scaleChangeTime) / curScale) + (scaleChangeTime / prevScale);
                     temp.time = curTime / scale;
                     temp.timeScale = scale;
-                    //Debug.Log("S:" + temp.timeScale + " " + temp.time + ": " + temp.line);
+                    //Debug.LogError("S:" + temp.timeScale + " " + temp.time + ": " + temp.line);
 
                     commands.Add(temp);
                     curLine++;
                 }
             }
 
-            GlobalTimeScript.ResetSlider(maxTime);
+            //GlobalTimeScript.ResetSlider(maxTime);
 
             //commandList.commands = commandList.commands.OrderBy(n => n.time).ToList();
-            //foreach(Command command in commands) Debug.Log(command.time + " " + command.line);
-            //foreach(KeyValuePair<string, string> kvp in functions) Debug.Log("Function name: " + kvp.Key + "\nFuntion bounds: " + kvp.Value);
+            //foreach(Command command in commands) Debug.LogError(command.time + " " + command.line);
+            //foreach(KeyValuePair<string, string> kvp in functions) Debug.LogError("Function name: " + kvp.Key + "\nFuntion bounds: " + kvp.Value);
         }
-        else Debug.Log("Could not open " + file);
+        else Debug.LogError("Could not open " + file);
     }
 
     public int getIndexAtTime(float time)
@@ -180,7 +181,7 @@ public class SceneManip : MonoBehaviour
                     curObject.transform.localScale = changeVec(curObject.transform.localScale, terms);
                     break;
                 default:
-                    Debug.Log("Invalid transform variable.");
+                    Debug.LogError("Invalid transform variable.");
                     break;
             }
         }
@@ -194,7 +195,7 @@ public class SceneManip : MonoBehaviour
                     curObject.transform.localScale = changeVec(curObject.transform.localScale, terms);
                     break;
                 default:
-                    Debug.Log("Invalid transform variable.");
+                    Debug.LogError("Invalid transform variable.");
                     break;
             }
         }
@@ -231,16 +232,16 @@ public class SceneManip : MonoBehaviour
         else if(terms[2] == "length") curVec.x = blend(percentComplete, Convert.ToSingle(terms[5]), Convert.ToSingle(terms[7]));
         else if(terms[2] == "height") curVec.y = blend(percentComplete, Convert.ToSingle(terms[5]), Convert.ToSingle(terms[7]));
         else if(terms[2] == "width") curVec.z = blend(percentComplete, Convert.ToSingle(terms[5]), Convert.ToSingle(terms[7]));
-        else Debug.Log("Unrecognized transform component(s).");
+        else Debug.LogError("Unrecognized transform component(s).");
         
         return curVec;
     }
 
     IEnumerator dynSetTransform(string[] terms, float timeScale)
     {
-        //Debug.Log("Dynamically updating transform...");
+        //Debug.LogError("Dynamically updating transform...");
         string[] component = terms[2].Split('.');
-        //foreach(string part in component) Debug.Log(part);
+        //foreach(string part in component) Debug.LogError(part);
 
         float duration = Convert.ToSingle(terms[3]) / timeScale;
         //float startTime = Time.time;
@@ -273,7 +274,7 @@ public class SceneManip : MonoBehaviour
                     }
                     break;
                 default:
-                    Debug.Log("Invalid transform variable.");
+                    Debug.LogError("Invalid transform variable.");
                     break;
             }
         }
@@ -291,7 +292,7 @@ public class SceneManip : MonoBehaviour
                     }
                     break;
                 default:
-                    Debug.Log("Invalid transform variable.");
+                    Debug.LogError("Invalid transform variable.");
                     break;
             }
         }
@@ -307,7 +308,7 @@ public class SceneManip : MonoBehaviour
         //Check for too few terms
         if(terms.Count() < 4)
         {
-            Debug.Log("Too few terms to set Animator.");
+            Debug.LogError("Too few terms to set Animator.");
             return;
         }
         //Setting animator with no avatar
@@ -317,7 +318,7 @@ public class SceneManip : MonoBehaviour
             RuntimeAnimatorController RAC = Resources.Load("Animators/" + terms[3]) as RuntimeAnimatorController;
             if(RAC == null)
             {
-                Debug.Log("Cannot find '" + terms[3] + "' in Resources/Animators folder.");
+                Debug.LogError("Cannot find '" + terms[3] + "' in Resources/Animators folder.");
                 return;
             }
 
@@ -341,7 +342,7 @@ public class SceneManip : MonoBehaviour
         Renderer curRenderer = curObject.GetComponent<Renderer>();
         if(curRenderer == null)
         {
-            Debug.Log(terms[1] + " does not have a renderer. Can not set renderer value.");
+            Debug.LogError(terms[1] + " does not have a renderer. Can not set renderer value.");
             return;
         }
 
@@ -367,7 +368,7 @@ public class SceneManip : MonoBehaviour
         else if(value == "green") newColor.g = Convert.ToSingle(terms[3]);
         else if(value == "blue") newColor.b = Convert.ToSingle(terms[3]);
         else if(value == "alpha" || value == "transparency") newColor.a = Convert.ToSingle(terms[3]);
-        else Debug.Log("Invalid renderer variable.");
+        else Debug.LogError("Invalid renderer variable.");
 
         curRenderer.material.color = newColor;
     }
@@ -380,7 +381,7 @@ public class SceneManip : MonoBehaviour
         Renderer curRenderer = curObject.GetComponent<Renderer>();
         if(curRenderer == null)
         {
-            Debug.Log(terms[1] + " does not have a renderer. Can not set renderer value.");
+            Debug.LogError(terms[1] + " does not have a renderer. Can not set renderer value.");
             yield break;
         }
 
@@ -416,11 +417,11 @@ public class SceneManip : MonoBehaviour
                 else if(value == "green") newColor.g = blend(percentComplete, Convert.ToSingle(terms[5]), Convert.ToSingle(terms[7]));
                 else if(value == "blue") newColor.b = blend(percentComplete, Convert.ToSingle(terms[5]), Convert.ToSingle(terms[7]));
                 else if(value == "alpha" || value == "transparency") newColor.a = blend(percentComplete, Convert.ToSingle(terms[5]), Convert.ToSingle(terms[7]));
-                else Debug.Log("Invalid renderer variable.");
+                else Debug.LogError("Invalid renderer variable.");
 
                 curRenderer.material.color = newColor;
             }
-            else Debug.Log("Renderer is null.");
+            else Debug.LogError("Renderer is null.");
 
             yield return null;
         }
@@ -437,7 +438,7 @@ public class SceneManip : MonoBehaviour
         int termCount = terms.Count();
         if(termCount < 3) 
         {
-            Debug.Log("Too few terms to create object.");
+            Debug.LogError("Too few terms to create object.");
             return 1;
         }
 
@@ -459,7 +460,7 @@ public class SceneManip : MonoBehaviour
         curObject = Resources.Load<GameObject>("Prefabs/" + prefabName);
         if(curObject == null)
         {
-            Debug.Log("Invalid Prefab.");
+            Debug.LogError("Invalid Prefab.");
             return 1;
         }
 
@@ -490,7 +491,7 @@ public class SceneManip : MonoBehaviour
     {
         if(terms.Count() < 4)
         {
-            Debug.Log("Too few terms to set cell value.");
+            Debug.LogError("Too few terms to set cell value.");
             return 1;
         }
         else
@@ -519,7 +520,7 @@ public class SceneManip : MonoBehaviour
     {
         if(terms.Count() < 8)
         {
-            Debug.Log("Too few terms to set cell value over time.");
+            Debug.LogError("Too few terms to set cell value over time.");
             return 1;
         }
         else
@@ -549,7 +550,7 @@ public class SceneManip : MonoBehaviour
         //Test for minimum terms
         if(terms.Count() < 2)
         {
-            Debug.Log("Too few terms to destroy object.");
+            Debug.LogError("Too few terms to destroy object.");
             return 1;
         }
         else
@@ -632,7 +633,7 @@ public class SceneManip : MonoBehaviour
         //Test for minimum terms
         if(terms.Count() < 4)
         {
-            Debug.Log("Too few terms to move object.");
+            Debug.LogError("Too few terms to move object.");
             return 1;
         }
         else
@@ -677,7 +678,7 @@ public class SceneManip : MonoBehaviour
         //Test for minimum terms
         if(terms.Count() < 2)
         {
-            Debug.Log("Too few terms to remove path.");
+            Debug.LogError("Too few terms to remove path.");
             return 1;
         }
         else
@@ -689,7 +690,7 @@ public class SceneManip : MonoBehaviour
 
             //Ensure object is following a path
             if(curFollower != null) curFollower.pathCreator = null;
-            else Debug.Log(terms[1] + " is not following a path.");
+            else Debug.LogError(terms[1] + " is not following a path.");
         }
         
         return 0;
@@ -697,7 +698,7 @@ public class SceneManip : MonoBehaviour
 
     int pause(string[] terms)
     {
-        //Debug.Log("Pausing...");
+        //Debug.LogError("Pausing...");
         pauseTime.PauseFunction();
         return 0;
     }
@@ -722,13 +723,13 @@ public class SceneManip : MonoBehaviour
             if(curRend != null) switchCamera.ChangeTarget(curObject);
             else
             {
-                Debug.Log(terms[1] + " requires a renderer for bounds calculations.");
+                Debug.LogError(terms[1] + " requires a renderer for bounds calculations.");
                 return 1;
             }
         }
         else
         {
-            Debug.Log(terms[1] + " does not exist or is misnamed.");
+            Debug.LogError(terms[1] + " does not exist or is misnamed.");
             return 1;
         }
         return 0;
@@ -779,7 +780,7 @@ public class SceneManip : MonoBehaviour
                 result = setCamera(terms);
                 break;
             default:
-                Debug.Log("Unrecognized command: '" + terms[0] + "'");
+                Debug.LogError("Unrecognized command: '" + terms[0] + "'");
                 result = -1;
                 break;
         }
@@ -789,6 +790,8 @@ public class SceneManip : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        Debug.LogError("Scene Manager Starting...");
+
         //get list for entire input file
         commandList = new CommandList("main.txt");
 
@@ -811,7 +814,7 @@ public class SceneManip : MonoBehaviour
                 Command curCommand = temp.commands[i];
                 if(temp.commands[i].line.Contains("CALL")) 
                 {
-                    //Debug.Log("Removing " + commandList.commands[i - linesRemoved].line);
+                    //Debug.LogError("Removing " + commandList.commands[i - linesRemoved].line);
                     commandList.commands.RemoveAt(i - linesRemoved);
                     linesRemoved++;
                 }
@@ -824,64 +827,75 @@ public class SceneManip : MonoBehaviour
         }        
 
         commandList.commands = commandList.commands.OrderBy(n => n.time).ToList();
-        //foreach(Command c in commandList.commands) Debug.Log(c.time + ": " + c.line);
+        //foreach(Command c in commandList.commands) Debug.LogError(c.time + ": " + c.line);
         
         //globalTime.ResetSlider(commandList.commands[commandList.commands.Count - 1].time);
+        if(GlobalTimeScript.runtime == 0) GlobalTimeScript.ResetSlider(Convert.ToSingle(bounds.Split('-')[2]));
+        //Debug.Log(GlobalTimeScript.runtime);
     }
 
     void getReferenceFunctions(CommandList curList, string functionName, float curTime, float curMult)
     {
         string bounds = curList.functions[functionName];
-        //Debug.Log(bounds);
+        //Debug.LogError(bounds);
+
         int lower = Convert.ToInt32(bounds.Split('-')[0]);
         int upper = Convert.ToInt32(bounds.Split('-')[1]);
+        float duration = Convert.ToSingle(bounds.Split('-')[2]);
+
         int i;
         for(i = lower; i < upper; i++)
         {
             Command curCommand = curList.commands[i];
-            //Debug.Log(i + ": " + curCommand.line);
+            //Debug.LogError(i + ": " + curCommand.line);
 
             if(curCommand.line.Contains("CALL"))
             {
-                //Debug.Log(curCommand.line + " in curList...");
+                //Debug.LogError(curCommand.line + " in curList...");
                 bool functionFound = false;
                 foreach(string fileInfo in curList.referenceList)
                 {
                     //Debug.Log("In " + fileInfo + " looking for " + curCommand.args[1]);
                     float timeMult = curMult;
                     if(curCommand.args.Count() >= 3) timeMult *= Convert.ToSingle(curCommand.args[2]);
-                    //Debug.Log("Reference mult = " + timeMult);
+                    //Debug.LogError("Reference mult = " + timeMult);
                     CommandList reference = new CommandList(fileInfo, timeMult);
                     //Debug.Log("Opening " + fileInfo + " for referencing...");
 
                     if(reference.functions.ContainsKey(curCommand.args[1]))
                     {
-                        //Debug.Log("Getting reference lines...");
+                        //Debug.LogError("Getting reference lines...");
 
                         string refBounds = reference.functions[curCommand.args[1]];
-                        //Debug.Log(refBounds);
+                        //Debug.LogError(refBounds);
                         int refLower = Convert.ToInt32(refBounds.Split('-')[0]);
                         int refUpper = Convert.ToInt32(refBounds.Split('-')[1]);
+                        float refDuration = Convert.ToSingle(refBounds.Split('-')[2]);
+
+                        //Debug.Log("ct = " + curTime + " | di = " + duration + " | rd = " + refDuration);
+                        //Debug.Log("Total duration = " + (duration + curTime + refDuration));
+                        GlobalTimeScript.ResetSlider(duration + curTime + refDuration);
+
                         for(int j = refLower; j < refUpper; j++)
                         {
                             Command refCommand = reference.commands[j];
-                            //Debug.Log(j + ": " + refCommand.line);
+                            //Debug.LogError(j + ": " + refCommand.line);
 
                             if(refCommand.line.Contains("CALL")) 
                             {
-                                //Debug.Log("Recurse");
+                                //Debug.LogError("Recurse");
                                 getReferenceFunctions(reference, curCommand.args[1], curCommand.time + curTime, timeMult);
                             }
                             else 
                             {
                                 //refCommand.time /= timeMult;
                                 refCommand.time += curTime + curCommand.time;
-                                //Debug.Log("Adding " + refCommand.time + " " + refCommand.line);
+                                //Debug.LogError("Adding " + refCommand.time + " " + refCommand.line);
                                 commandList.commands.Add(refCommand);
                             }
                         }
                         
-                        //Debug.Log(curCommand.args[1] + " found in " + fileInfo);
+                        //Debug.LogError(curCommand.args[1] + " found in " + fileInfo);
                         functionFound = true;
                         break;
                     }
@@ -898,13 +912,13 @@ public class SceneManip : MonoBehaviour
         {
             if(!waited) 
             {
-                //Debug.Log("Waited one frame...");
+                //Debug.LogError("Waited one frame...");
                 waited = true;
                 yield return null;
             }
             else
             {
-                //Debug.Log("Catch up started.");
+                //Debug.LogError("Catch up started.");
                 waited = false;
 
                 //Reset follow camera target list
@@ -929,7 +943,7 @@ public class SceneManip : MonoBehaviour
                             if(percentComplete >= 1)
                             {
                                 //Call as SETOBJCELL(make change instant)
-                                //Debug.Log("Past duration: " + offset + " > " + Convert.ToSingle(curCommand.args[3]));
+                                //Debug.LogError("Past duration: " + offset + " > " + Convert.ToSingle(curCommand.args[3]));
                                 newArgs[1] = curCommand.args[1];
                                 newArgs[2] = curCommand.args[2];
 
@@ -943,13 +957,13 @@ public class SceneManip : MonoBehaviour
 
                                 string line = "";
                                 foreach(string arg in newArgs) line += arg + " ";
-                                //Debug.Log("SETOBJCELL" + line);
+                                //Debug.LogError("SETOBJCELL" + line);
                                 setCell(newArgs, curCommand.timeScale);
                             }
                             else
                             {
                                 //Call with adjusted partial values
-                                //Debug.Log("Within duration: " + offset + " < " + Convert.ToSingle(curCommand.args[3]));
+                                //Debug.LogError("Within duration: " + offset + " < " + Convert.ToSingle(curCommand.args[3]));
                                 newArgs[1] = curCommand.args[1];
                                 newArgs[2] = curCommand.args[2];
                                 newArgs[4] = curCommand.args[4];
@@ -982,7 +996,7 @@ public class SceneManip : MonoBehaviour
 
                                 string line = "";
                                 foreach(string arg in newArgs) line += arg + " ";
-                                //Debug.Log("DYNUPDATECELL" + line);
+                                //Debug.LogError("DYNUPDATECELL" + line);
                                 dynSetCell(newArgs, curCommand.timeScale);
                             }
                         }
@@ -1011,14 +1025,14 @@ public class SceneManip : MonoBehaviour
             if(globalTime.timeChanged)
             {
                 //Always upause time upon time slider change
-                Debug.Log("Time change detected.");
+                //Debug.LogError("Time change detected.");
                 if(PauseScript.paused) pauseTime.PauseFunction();
 
                 //Mark created objects for destruction(happens at the end of current frame)
                 GameObject[] createdObjects = GameObject.FindGameObjectsWithTag("Runtime");
                 foreach(GameObject obj in createdObjects) 
                 {
-                    //Debug.Log("Deleting " + obj.name);
+                    //Debug.LogError("Deleting " + obj.name);
                     if(obj != null) Destroy(obj);
                 }
 
