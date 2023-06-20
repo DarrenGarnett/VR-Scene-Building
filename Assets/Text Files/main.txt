@@ -1,6 +1,9 @@
 INCLUDE demo.txt
 
 FUNCTION main
+CREATE car Vehicles_PizzaCar 
+MOVE car CurvyLoop 5 ROTATION 0 180 0
 //MOVE HotdogTruck CurvyLoop 5 ROTATION 0 180 0
+TIME 5
 CALL demo
 END main

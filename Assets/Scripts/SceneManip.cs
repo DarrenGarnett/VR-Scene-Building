@@ -52,7 +52,7 @@ public class CommandList
             referenceList.Add(file);
 
             //float curTime = 0, curScale = 1, prevScale = 1, scaleChangeTime = -1;
-            float curTime = 0;
+            float curTime = 0, maxTime = 0;
             int curLine = 0, startLine = 0;
             foreach(string line in lines)
             {
@@ -61,7 +61,11 @@ public class CommandList
                 temp.args = line.Split(' ');
                 
 
-                if(line.Split(' ')[0] == "TIME") curTime = Convert.ToSingle(temp.args[1]);
+                if(line.Split(' ')[0] == "TIME") 
+                {
+                    curTime = Convert.ToSingle(temp.args[1]);
+                    if(curTime >= maxTime) maxTime = curTime;
+                }
                 /*else if(line.Contains("TIMESCALE")) 
                 {
                     scaleChangeTime = curTime;
@@ -93,6 +97,8 @@ public class CommandList
                     curLine++;
                 }
             }
+
+            GlobalTimeScript.ResetSlider(maxTime);
 
             //commandList.commands = commandList.commands.OrderBy(n => n.time).ToList();
             //foreach(Command command in commands) Debug.Log(command.time + " " + command.line);
@@ -820,7 +826,7 @@ public class SceneManip : MonoBehaviour
         commandList.commands = commandList.commands.OrderBy(n => n.time).ToList();
         //foreach(Command c in commandList.commands) Debug.Log(c.time + ": " + c.line);
         
-        globalTime.ResetSlider(commandList.commands[commandList.commands.Count - 1].time);
+        //globalTime.ResetSlider(commandList.commands[commandList.commands.Count - 1].time);
     }
 
     void getReferenceFunctions(CommandList curList, string functionName, float curTime, float curMult)
