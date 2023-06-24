@@ -5,7 +5,8 @@ using UnityEngine.UI;
 
 public class PauseScript : MonoBehaviour
 {
-    public Button pauseButton;
+    public static Button pauseButton;
+    public Button PBCopy;
 
     // Boolean to allow other scripts to see when the animation is paused
     public static bool paused;
@@ -17,9 +18,10 @@ public class PauseScript : MonoBehaviour
     {
         mainCameraControls = GameObject.FindGameObjectWithTag("MainCameraMovement");
         paused = false;
+        pauseButton = PBCopy;
     }
 
-    public void PauseFunction()
+    public static void PauseFunction()
     {
         // Case where animation is playing
         if(paused == false)

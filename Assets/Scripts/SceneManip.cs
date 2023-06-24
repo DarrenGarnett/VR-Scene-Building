@@ -699,7 +699,8 @@ public class SceneManip : MonoBehaviour
     int pause(string[] terms)
     {
         //Debug.LogError("Pausing...");
-        pauseTime.PauseFunction();
+        //pauseTime.PauseFunction();
+        PauseScript.PauseFunction();
         return 0;
     }
 
@@ -790,7 +791,7 @@ public class SceneManip : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        Debug.LogError("Scene Manager Starting...");
+        //Debug.LogError("Scene Manager Starting...");
 
         //get list for entire input file
         commandList = new CommandList("main.txt");
@@ -1026,7 +1027,8 @@ public class SceneManip : MonoBehaviour
             {
                 //Always upause time upon time slider change
                 //Debug.LogError("Time change detected.");
-                if(PauseScript.paused) pauseTime.PauseFunction();
+                //if(PauseScript.paused) pauseTime.PauseFunction();
+                if(PauseScript.paused)PauseScript.PauseFunction();
 
                 //Mark created objects for destruction(happens at the end of current frame)
                 GameObject[] createdObjects = GameObject.FindGameObjectsWithTag("Runtime");
