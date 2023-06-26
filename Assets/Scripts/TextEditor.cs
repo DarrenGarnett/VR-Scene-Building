@@ -9,56 +9,31 @@ using System;
 
 public class TextEditor : MonoBehaviour
 {
-    public Button editButton;
-    public bool openFileWindow = false;
     public TMP_Dropdown fileDropdown;
     public TMP_InputField fileInput;
     private string curText;
     private string curFile;
-    private List<string> textFiles = new List<string>();
-    private string dirPath = Application.streamingAssetsPath + "/Text Files/";
     private bool editsMade;
-
-    // Start is called before the first frame update
+    
     void Start()
     {
-        string[] files = Directory.GetFiles(dirPath);
-        string mainFile = "main.txt";
-
-        if(!File.Exists(dirPath + mainFile)) Debug.LogError("main.txt is missing!");
-
-        textFiles.Add(mainFile);
-        for(int i = 0; i < files.Length; i++)
-        {
-            if(!files[i].Contains("meta") && !files[i].Contains(mainFile))
-            {
-                textFiles.Add(files[i].Remove(0, dirPath.Length));
-            }
-        }
-
         fileDropdown.options.Clear();
-        foreach(string file in textFiles) 
+        foreach(string file in FileManager.textFiles)
         {
             fileDropdown.options.Add(new TMP_Dropdown.OptionData() {text = file});
         }
 
-        curFile = mainFile;
-        getText(curFile);
-
         editsMade = false;
-    }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
+        curFile = "main.txt";
+        getText(curFile);
     }
 
     void getText(string filename)
     {
-        if(File.Exists(dirPath + filename))
+        if(File.Exists(FileManager.textPath + filename))
         {
-            curText = File.ReadAllText(dirPath + filename);
+            curText = File.ReadAllText(FileManager.textPath + filename);
             fileInput.text = curText;
         }
         else Debug.LogError(filename + " could not be opened.");
@@ -66,7 +41,7 @@ public class TextEditor : MonoBehaviour
 
     public void setText()
     {
-        File.WriteAllText(dirPath + curFile, fileInput.text);
+        File.WriteAllText(FileManager.textPath + curFile, fileInput.text);
         editsMade = true;
     }
 
@@ -78,7 +53,7 @@ public class TextEditor : MonoBehaviour
 
     public void switchFile()
     {
-        curFile = textFiles[fileDropdown.value];
+        curFile = FileManager.textFiles[fileDropdown.value];
         getText(curFile);
     }
 
