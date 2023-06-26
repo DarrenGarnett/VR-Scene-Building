@@ -835,6 +835,8 @@ public class SceneManip : MonoBehaviour
         //globalTime.ResetSlider(commandList.commands[commandList.commands.Count - 1].time);
         if(GlobalTimeScript.runtime == 0) GlobalTimeScript.ResetSlider(Convert.ToSingle(bounds.Split('-')[2]));
         //Debug.Log(GlobalTimeScript.runtime);
+
+        if(!PauseScript.paused)PauseScript.PauseFunction();
     }
 
     void getReferenceFunctions(CommandList curList, string functionName, float curTime, float curMult)
@@ -1053,7 +1055,7 @@ public class SceneManip : MonoBehaviour
                 curCommand = commandList.commands[index];
 
                 //Execute it and move to the next one if it is time
-                if(globalTime.currTime >= curCommand.time)
+                if(globalTime.currTime >= curCommand.time && !PauseScript.paused)
                 {
                     execute(curCommand.line, curCommand.args, curCommand.timeScale);
                     index++;

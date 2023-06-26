@@ -20,7 +20,7 @@ public class FileManager : MonoBehaviour
     void MoveTextFiles()
     {
         int dirCount = Directory.GetDirectories(Application.streamingAssetsPath).Length;
-        Debug.LogError("Dirs in streaming assets?: " + dirCount);
+        //Debug.LogError("Dirs in streaming assets?: " + dirCount);
 
         string[] path = textPath.Split('/');
         string rootPath = "";
@@ -46,7 +46,7 @@ public class FileManager : MonoBehaviour
                 Directory.Move(dir, dest);
             }
         }
-        else Debug.LogError("Not moving text files, in editor or folder already in root.");
+        //else Debug.LogError("Not moving text files, in editor or folder already in root.");
 
         string mainFile = "main.txt";
         string[] files = Directory.GetFiles(textPath);

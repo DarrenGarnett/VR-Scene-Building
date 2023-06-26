@@ -1057,16 +1057,16 @@ RectTransform:
   m_GameObject: {fileID: 228243311}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.4166667, y: 0.4166667, z: 0.4166667}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 643762186}
-  m_Father: {fileID: 640557358}
+  m_Father: {fileID: 1288062156}
   m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: 240, y: -130}
+  m_AnchoredPosition: {x: -75, y: 25}
   m_SizeDelta: {x: 140, y: 40}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &228243313
@@ -2287,8 +2287,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3585d1869a82a354f92071cf3fea84af, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  editButton: {fileID: 1927571577}
-  openFileWindow: 0
   fileDropdown: {fileID: 1602014235}
   fileInput: {fileID: 1999879977}
 --- !u!4 &595756409 stripped
@@ -2442,8 +2440,6 @@ RectTransform:
   m_LocalScale: {x: 2.3999999, y: 2.3999999, z: 2.3999999}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 1540177695}
-  - {fileID: 228243312}
   - {fileID: 1082435332}
   - {fileID: 1417065115}
   - {fileID: 80391334}
@@ -5051,7 +5047,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1186333275}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 5.9, y: 12.1, z: -40.7}
+  m_LocalPosition: {x: 6, y: 12, z: -40}
   m_LocalScale: {x: 1.1868, y: 1.1868, z: 1.1868}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5449,6 +5445,8 @@ RectTransform:
   - {fileID: 185491191}
   - {fileID: 1736997818}
   - {fileID: 200916062}
+  - {fileID: 1540177695}
+  - {fileID: 228243312}
   - {fileID: 640557358}
   - {fileID: 1927571580}
   - {fileID: 326910227}
@@ -6978,16 +6976,16 @@ RectTransform:
   m_GameObject: {fileID: 1540177694}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.4166667, y: 0.4166667, z: 0.4166667}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2069579873}
-  m_Father: {fileID: 640557358}
-  m_RootOrder: 0
+  m_Father: {fileID: 1288062156}
+  m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 1, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: 240, y: -110}
+  m_AnchoredPosition: {x: -75, y: 70}
   m_SizeDelta: {x: 140, y: 40}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1540177696
@@ -7034,9 +7032,9 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: CameraMovement, Assembly-CSharp
-        m_MethodName: ResetCamera
+      - m_Target: {fileID: 1454957422}
+        m_TargetAssemblyTypeName: SwitchCameraScript, Assembly-CSharp
+        m_MethodName: resetCamera
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

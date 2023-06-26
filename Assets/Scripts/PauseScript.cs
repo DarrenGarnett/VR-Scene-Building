@@ -30,7 +30,7 @@ public class PauseScript : MonoBehaviour
             // Set the time scale to 0
             // Time.timeScale = 0;
             // Change the text on the button to say "Resume"
-            pauseButton.GetComponentInChildren<Text>().text = "Resume";
+            pauseButton.GetComponentInChildren<Text>().text = "Play";
             // Hide the main camera controls since the camera can't move if the time scale is 0
             // mainCameraControls.SetActive(false);
         }

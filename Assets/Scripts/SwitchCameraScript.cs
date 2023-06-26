@@ -108,4 +108,18 @@ public class SwitchCameraScript : MonoBehaviour
         models.RemoveRange(initSize, size - initSize);
         size = initSize;
     }
+
+    public void resetCamera()
+    {
+        mainCamera.transform.rotation = Quaternion.Euler(0, 0, 0);
+
+        if(!mainCameraActive)
+        {
+            mainCamera.enabled = true;
+            mainCameraActive = true;
+            followCamera.enabled = false;
+            mainCameraControls.SetActive(true);
+            CameraMovement.drag = true;
+        }
+    }
 }
