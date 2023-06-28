@@ -491,7 +491,7 @@ public class SceneManip : MonoBehaviour
 
         //Apply all values to the new GameObject
         NewGameObj.name = objectName;
-        NewGameObj.transform.position = new Vector3(xpos, ypos, zpos);
+        NewGameObj.transform.position = curObject.transform.position + new Vector3(xpos, ypos, zpos);
 
         switchCamera.addTarget(NewGameObj);
 
@@ -618,10 +618,13 @@ public class SceneManip : MonoBehaviour
                 string pathName = terms[i].Remove(0, 1);
                 BezierPath pathToAdd = GameObject.Find(pathName).GetComponent<PathCreator>().bezierPath;
                 
-                for(int j = 1; j < pathToAdd.NumAnchorPoints; j++)
+                path.GlobalNormalsAngle = pathToAdd.GlobalNormalsAngle;
+                
+                for(int j = 0; j < pathToAdd.NumAnchorPoints - 1; j++)
                 {
                     //get points in current segment(0 and 3 are anchors, 1 and 2 are controls)
                     Vector3[] points = pathToAdd.GetPointsInSegment(j);
+                    //foreach(Vector3 point in points) Debug.Log(point);
 
                     //get distance between anchor points in current segment
                     Vector3 dist = (points[3] - points[0]) * sign;
@@ -854,7 +857,7 @@ public class SceneManip : MonoBehaviour
         else GlobalTimeScript.ResetSlider(sceneDuration);
         //Debug.Log(GlobalTimeScript.runtime);
 
-        if(!PauseScript.paused)PauseScript.PauseFunction();
+        //if(!PauseScript.paused)PauseScript.PauseFunction();
     }
 
     void getReferenceFunctions(CommandList curList, string functionName, float curTime, float curMult)
