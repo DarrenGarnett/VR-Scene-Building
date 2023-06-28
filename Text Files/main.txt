@@ -1,6 +1,0 @@
-INCLUDE demo.txt
-
-FUNCTION main
-CALL demo
-CREATE Car Vehicles_PizzaCar
-END main

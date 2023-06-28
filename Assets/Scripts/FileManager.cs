@@ -31,11 +31,10 @@ public class FileManager : MonoBehaviour
         rootPath = "";
         for(int i = 0; i < path.Length - 4; i++) rootPath += "/" + path[i];
         rootPath = rootPath.Remove(0, 1);
-
-        textPath = rootPath + "/Text Files/";
+        if(!inEditor) textPath = rootPath + "/Text Files/";
 
         if(!inEditor && dirCount > 0)
-        {            
+        {          
             //https://stackoverflow.com/questions/70694442/directory-move-throws-ioexception-regardless-of-the-fileshare-options-for-inte
             string source = Application.streamingAssetsPath;
             string target = rootPath;

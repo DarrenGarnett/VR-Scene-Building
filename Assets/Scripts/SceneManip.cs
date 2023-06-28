@@ -56,6 +56,7 @@ public class CommandList
             //float curTime = 0, curScale = 1, prevScale = 1, scaleChangeTime = -1;
             float curTime = 0, maxTime = 0;
             int curLine = 0, startLine = 0;
+            bool endToFunction = false;
             foreach(string line in lines)
             {
                 Command temp = new Command();
@@ -82,6 +83,7 @@ public class CommandList
                 }
                 else if(line.Contains("END")) 
                 {
+                    endToFunction = true;
                     functions.Add(temp.args[1], startLine.ToString() + "-" + curLine.ToString() + "-" + maxTime);
                     curTime = 0;
                     maxTime = 0;
@@ -98,6 +100,20 @@ public class CommandList
 
                     commands.Add(temp);
                     curLine++;
+                }
+            }
+
+            if(!endToFunction) 
+            {
+                if(file == "main.txt")
+                {
+                    //Debug.Log("assigning default bounds to main");
+                    functions.Add("main", startLine.ToString() + "-" + curLine.ToString() + "-" + maxTime);
+                }
+                else 
+                {
+                    //Debug.Log("assigning default bounds to " + file.Remove(file.Length - 4));
+                    functions.Add(file.Remove(file.Length - 4), startLine.ToString() + "-" + curLine.ToString() + "-" + maxTime);
                 }
             }
 
@@ -134,6 +150,7 @@ public class SceneManip : MonoBehaviour
     private Command curCommand;
     private CommandList commandList;
     private bool waited = false;
+    private float sceneDuration = 0;
 
     void setCurGameObject(string name)
     {
@@ -833,7 +850,8 @@ public class SceneManip : MonoBehaviour
         //foreach(Command c in commandList.commands) Debug.LogError(c.time + ": " + c.line);
         
         //globalTime.ResetSlider(commandList.commands[commandList.commands.Count - 1].time);
-        if(GlobalTimeScript.runtime == 0) GlobalTimeScript.ResetSlider(Convert.ToSingle(bounds.Split('-')[2]));
+        if(sceneDuration == 0) GlobalTimeScript.ResetSlider(Convert.ToSingle(bounds.Split('-')[2]));
+        else GlobalTimeScript.ResetSlider(sceneDuration);
         //Debug.Log(GlobalTimeScript.runtime);
 
         if(!PauseScript.paused)PauseScript.PauseFunction();
@@ -878,8 +896,9 @@ public class SceneManip : MonoBehaviour
                         float refDuration = Convert.ToSingle(refBounds.Split('-')[2]);
 
                         //Debug.Log("ct = " + curTime + " | di = " + duration + " | rd = " + refDuration);
-                        //Debug.Log("Total duration = " + (duration + curTime + refDuration));
-                        GlobalTimeScript.ResetSlider(duration + curTime + refDuration);
+                        //GlobalTimeScript.ResetSlider(duration + curTime + refDuration);
+                        if(sceneDuration < (duration + curTime + refDuration)) sceneDuration = duration + curTime + refDuration;
+                        //Debug.Log("Total duration = " + sceneDuration);
 
                         for(int j = refLower; j < refUpper; j++)
                         {
