@@ -8,14 +8,13 @@ SETOBJCELL Forward Transform.position -5 0 -10
 
 //  create vehicles
 CREATE Truck1 Dumptruck
-CREATE Truck2 DumpTruck
 CREATE Dozer BullDozer1
 
 //  start moving them along the paths
 MOVE Truck1 UpHill 10 ROTATION 0 -90 0
-MOVE Dozer Reverse 5 ROTATION 0 180 0
+MOVE Dozer Reverse 5 ROTATION 0 90 0
 
 TIME 5
-//MOVE Dozer Forward 5 ROTATION 0 180 0
+MOVE Dozer Forward 5 ROTATION 0 -90 0
 
 TIME 10

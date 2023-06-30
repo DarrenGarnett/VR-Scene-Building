@@ -644,6 +644,8 @@ public class SceneManip : MonoBehaviour
             //remove default segments(created when pathCreator initialized)
             path.DeleteSegment(0);
             path.DeleteSegment(1);
+
+            pathCreator.DrawPath();
         }
 
         return 0;
@@ -684,6 +686,7 @@ public class SceneManip : MonoBehaviour
             float distance = progress * curCreator.path.length;
 
             curFollower.offsetPosition = distance;
+            curFollower.pathChanged = true;
 
             if(terms.Count() >= 8)
             {
@@ -764,7 +767,7 @@ public class SceneManip : MonoBehaviour
         //Initialize return value
         int result = 0;
 
-        //Debug.Log(command);
+        //Debug.LogError(command);
         
         //Determine command by name
         switch(terms[0])
@@ -813,8 +816,6 @@ public class SceneManip : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        //Debug.LogError("Scene Manager Starting...");
-
         //get list for entire input file
         commandList = new CommandList("main.txt");
 
@@ -857,7 +858,7 @@ public class SceneManip : MonoBehaviour
         else GlobalTimeScript.ResetSlider(sceneDuration);
         //Debug.Log(GlobalTimeScript.runtime);
 
-        //if(!PauseScript.paused)PauseScript.PauseFunction();
+        if(!PauseScript.paused)PauseScript.PauseFunction();
     }
 
     void getReferenceFunctions(CommandList curList, string functionName, float curTime, float curMult)

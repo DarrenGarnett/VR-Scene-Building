@@ -75,6 +75,6 @@ public class FileManager : MonoBehaviour
         List<string> prefabNames = new List<string>();
         foreach(GameObject prefab in prefabs) prefabNames.Add(prefab.name);
 
-        if(!inEditor) File.WriteAllLines(rootPath + "/prefabs.txt", prefabNames);
+        if(!inEditor) File.WriteAllLines(rootPath + "/models.txt", prefabNames);
     }
 }

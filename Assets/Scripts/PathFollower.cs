@@ -16,6 +16,7 @@ namespace PathCreation.Examples
         public Vector3 prevPathOffset;
         public Quaternion offsetRotation = Quaternion.Euler(0, 0, 0);
         public Quaternion prevPathRotation;
+        public bool pathChanged = false;
 
         public float cycleDuration = 1;
 
@@ -26,12 +27,13 @@ namespace PathCreation.Examples
                 // Subscribed to the pathUpdated event so that we're notified if the path changes during the game
                 pathCreator.pathUpdated += OnPathChanged;
 
-                prevPathOffset = new Vector3(0, 0, 0);
+                prevPathOffset = transform.position;
+                //prevPathOffset = new Vector3(0, 0, 0);
 
                 prevPathRotation = transform.rotation;
 
-                transform.position = prevPathOffset;
-                transform.rotation = prevPathRotation;
+                transform.position += prevPathOffset;
+                //transform.rotation = prevPathRotation;
 
                 speed = 1;
                 //Debug.Log(pathCreator.path.length);
@@ -54,11 +56,15 @@ namespace PathCreation.Examples
                     offsetPosition = 0;
                 }
 
+                if(pathChanged)
+                {
+                    distanceTravelled = 0;
+                    pathChanged = false;
+                }
+
                 distanceTravelled += pathCreator.path.length * (GlobalTimeScript.deltaTime / cycleDuration);
                 Vector3 pathPosition = pathCreator.path.GetPointAtDistance(distanceTravelled, endOfPathInstruction);
                 Quaternion pathRotation = pathCreator.path.GetRotationAtDistance(distanceTravelled, endOfPathInstruction);
-                //Debug.Log(name + transform.forward);
-                //Debug.Log(name + transform.rotation.eulerAngles);
 
                 //Correcting angle to given offset
                 pathRotation *= offsetRotation;
@@ -67,12 +73,15 @@ namespace PathCreation.Examples
                 applied to it, we can get them by subtracting the total offset 
                 added previously(made of both the path and animation offsets)*/
                 transform.position -= prevPathOffset;
+                //Debug.Log(transform.position);
                 transform.rotation *= Quaternion.Inverse(prevPathRotation);
 
-                Vector3 pathOffset = transform.position + pathPosition;
+                //Vector3 pathOffset = transform.position + pathPosition;
+                Vector3 pathOffset = pathPosition;
                 Quaternion rotOffset = transform.rotation * pathRotation;
 
                 transform.position += pathOffset;
+                //Debug.Log(transform.position);
                 transform.rotation *= rotOffset;
 
                 prevPathOffset = pathOffset;
