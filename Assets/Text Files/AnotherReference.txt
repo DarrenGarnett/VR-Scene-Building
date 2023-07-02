@@ -1,6 +1,0 @@
-INCLUDE Reference.txt
-
-FUNCTION pathCar
-CALL resetCar
-MOVE P5 Path1 4
-END pathCar

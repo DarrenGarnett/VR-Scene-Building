@@ -1,6 +1,0 @@
-INCLUDE demo.txt
-
-FUNCTION main
-//MOVE HotdogTruck CurvyLoop 5 ROTATION 0 180 0
-CALL demo
-END main

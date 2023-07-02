@@ -9,12 +9,12 @@ public class GlobalTimeScript : MonoBehaviour, IPointerDownHandler, IPointerUpHa
     public static float deltaTime;
     public float currTime;
     public float prevTime;
-    public static float runtime = 50f;
+    public static float runtime = 0f;
 
     public bool isBeingControlledByUser;
     public bool timeChanged;
 
-    private Slider positionSlider;
+    private static Slider positionSlider;
 
     // Start is called before the first frame update
     void Start()
@@ -61,7 +61,7 @@ public class GlobalTimeScript : MonoBehaviour, IPointerDownHandler, IPointerUpHa
         currTime = 0f;
     }
 
-    public void ResetSlider(float max)
+    public static void ResetSlider(float max)
     {
         runtime = max;
         positionSlider.maxValue = max;
