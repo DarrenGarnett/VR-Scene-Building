@@ -8,6 +8,8 @@ TagManager:
   - MainCameraMovement
   - Target
   - Runtime
+  - Path
+  - ActivePath
   layers:
   - Default
   - TransparentFX

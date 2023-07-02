@@ -1,20 +1,3 @@
-//  set up paths
-PATH ToDumpZone +UpHill
-SETOBJCELL ToDumpZone Transform.position.x -2
-PATH Reverse +DownV
-SETOBJCELL Reverse Transform.position -10 0 -5
-PATH Forward +UpV
-SETOBJCELL Forward Transform.position -5 0 -10
+INCLUDE demo.txt
 
-//  create vehicles
-CREATE Truck1 Dumptruck
-CREATE Dozer BullDozer1
-
-//  start moving them along the paths
-MOVE Truck1 UpHill 10 ROTATION 0 -90 0
-MOVE Dozer Reverse 5 ROTATION 0 90 0
-
-TIME 5
-MOVE Dozer Forward 5 ROTATION 0 -90 0
-
-TIME 10
+CALL demo

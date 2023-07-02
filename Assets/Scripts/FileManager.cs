@@ -10,15 +10,17 @@ using System;
 
 public class FileManager : MonoBehaviour
 {
-    public static string textPath = Application.streamingAssetsPath + "/Text Files/";
+    public static string textPath;
     public static List<string> textFiles = new List<string>();
-    private string rootPath;
+    public static string rootPath;
     private bool inEditor;
 
     void OnEnable()
     {
+        textPath = Application.streamingAssetsPath + "/Text Files/";
         MoveTextFiles();
-        PefabFilesPlaceholder();
+        PrefabFilesPlaceholder();
+        GeneratePathFile();
     }
 
     void MoveTextFiles()
@@ -31,6 +33,7 @@ public class FileManager : MonoBehaviour
         rootPath = "";
         for(int i = 0; i < path.Length - 4; i++) rootPath += "/" + path[i];
         rootPath = rootPath.Remove(0, 1);
+
         if(!inEditor) textPath = rootPath + "/Text Files/";
 
         if(!inEditor && dirCount > 0)
@@ -68,13 +71,23 @@ public class FileManager : MonoBehaviour
     }
 
     //https://stackoverflow.com/questions/53968958/how-can-i-get-all-prefabs-from-a-assets-folder-getting-not-valid-cast-exception
-    void PefabFilesPlaceholder()
+    void PrefabFilesPlaceholder()
     {
         GameObject[] prefabs = Resources.LoadAll<GameObject>("Prefabs");
 
         List<string> prefabNames = new List<string>();
-        foreach(GameObject prefab in prefabs) prefabNames.Add(prefab.name);
+        foreach(GameObject prefab in prefabs) prefabNames.Add(prefab.name + "\n\tPosition: " + prefab.transform.position + "\n\tRotation: " + prefab.transform.rotation.eulerAngles);
 
         if(!inEditor) File.WriteAllLines(rootPath + "/models.txt", prefabNames);
+    }
+
+    void GeneratePathFile()
+    {
+        GameObject[] paths = GameObject.FindGameObjectsWithTag("Path");
+
+        List<string> pathData = new List<string>();
+        foreach(GameObject path in paths) pathData.Add(path.name + "\n\tPosition: " + path.transform.position + "\n\tRotation: " + path.transform.rotation.eulerAngles);
+
+        if(!inEditor) File.WriteAllLines(rootPath + "/paths.txt", pathData);
     }
 }

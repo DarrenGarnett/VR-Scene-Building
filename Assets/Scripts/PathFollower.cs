@@ -10,15 +10,16 @@ namespace PathCreation.Examples
         public PathCreator pathCreator;
         public EndOfPathInstruction endOfPathInstruction;
         public float speed;
-        float distanceTravelled;
+        public float distanceTravelled;
         Animator followerAnimator;
         public float offsetPosition;
         public Vector3 prevPathOffset;
-        public Quaternion offsetRotation = Quaternion.Euler(0, 0, 0);
+        public Quaternion offsetRotation;
         public Quaternion prevPathRotation;
         public bool pathChanged = false;
 
         public float cycleDuration = 1;
+        private Quaternion initRotation;
 
         void Start()
         {
@@ -31,9 +32,11 @@ namespace PathCreation.Examples
                 //prevPathOffset = new Vector3(0, 0, 0);
 
                 prevPathRotation = transform.rotation;
+                initRotation = transform.rotation;
 
                 transform.position += prevPathOffset;
                 //transform.rotation = prevPathRotation;
+                offsetRotation = transform.rotation;
 
                 speed = 1;
                 //Debug.Log(pathCreator.path.length);
@@ -49,43 +52,65 @@ namespace PathCreation.Examples
                 //get next point in the path
                 //distanceTravelled += speed * Time.deltaTime;
                 //distanceTravelled += pathCreator.path.length * (Time.deltaTime / cycleDuration);
+                /*if(pathChanged)
+                {
+                    //Debug.Log("path changed.");
+                    distanceTravelled = 0;
+                    pathChanged = false;
+                }*/
+                
                 if(offsetPosition != 0)
                 {
                     //Debug.Log("path progress offset.");
-                    distanceTravelled += offsetPosition;
+                    distanceTravelled = offsetPosition;
                     offsetPosition = 0;
+                    //if(!pathChanged) prevPathRotation = transform.rotation;
+                    //else prevPathRotation = Quaternion.Euler(0, 0, 0);
+
+                    if(pathChanged) 
+                    {
+                        //prevPathRotation = Quaternion.Euler(0, 0, 0);
+                        //Debug.Log("path offset reset");
+                    }
+                    pathChanged = false;
                 }
 
-                if(pathChanged)
+                if(transform.rotation != prevPathRotation) 
                 {
-                    distanceTravelled = 0;
-                    pathChanged = false;
+                    //Debug.Log("transform changed outside of path");
+                    initRotation = transform.rotation;
                 }
 
                 distanceTravelled += pathCreator.path.length * (GlobalTimeScript.deltaTime / cycleDuration);
                 Vector3 pathPosition = pathCreator.path.GetPointAtDistance(distanceTravelled, endOfPathInstruction);
                 Quaternion pathRotation = pathCreator.path.GetRotationAtDistance(distanceTravelled, endOfPathInstruction);
 
+                transform.position = pathPosition + prevPathOffset;
+                transform.rotation = pathRotation * initRotation;
+
+                prevPathRotation = transform.rotation;
+
                 //Correcting angle to given offset
-                pathRotation *= offsetRotation;
+                //pathRotation *= offsetRotation;
                 
                 /*since the current transform has the animation transformations 
                 applied to it, we can get them by subtracting the total offset 
                 added previously(made of both the path and animation offsets)*/
-                transform.position -= prevPathOffset;
+                /*transform.position -= prevPathOffset;
                 //Debug.Log(transform.position);
                 transform.rotation *= Quaternion.Inverse(prevPathRotation);
 
                 //Vector3 pathOffset = transform.position + pathPosition;
                 Vector3 pathOffset = pathPosition;
-                Quaternion rotOffset = transform.rotation * pathRotation;
+                //Quaternion rotOffset = transform.rotation * pathRotation;
+                Quaternion rotOffset = pathRotation;
 
                 transform.position += pathOffset;
                 //Debug.Log(transform.position);
                 transform.rotation *= rotOffset;
 
                 prevPathOffset = pathOffset;
-                prevPathRotation = rotOffset;
+                prevPathRotation = rotOffset;*/
             }
         }
 

@@ -492,6 +492,7 @@ public class SceneManip : MonoBehaviour
         //Apply all values to the new GameObject
         NewGameObj.name = objectName;
         NewGameObj.transform.position = curObject.transform.position + new Vector3(xpos, ypos, zpos);
+        NewGameObj.transform.rotation = curObject.transform.rotation;
 
         switchCamera.addTarget(NewGameObj);
 
@@ -628,6 +629,7 @@ public class SceneManip : MonoBehaviour
 
                     //get distance between anchor points in current segment
                     Vector3 dist = (points[3] - points[0]) * sign;
+                    //Debug.Log("Distance in segment " + j + ": " + dist);
                         
                     //add segment to constructed path by distance in current segment
                     path.AddSegmentToEnd(curPoint + dist);
@@ -645,7 +647,7 @@ public class SceneManip : MonoBehaviour
             path.DeleteSegment(0);
             path.DeleteSegment(1);
 
-            pathCreator.DrawPath();
+            if(SettingsManager.pathsVisible) pathCreator.DrawPath();
         }
 
         return 0;
@@ -669,6 +671,7 @@ public class SceneManip : MonoBehaviour
             //Get PathFollower component if ther is one, and add one if there isn't
             curObject.TryGetComponent<PathFollower>(out PathFollower curFollower);
             if(curFollower == null) curFollower = curObject.AddComponent<PathFollower>() as PathFollower;
+            else curFollower.pathChanged = true;
             curFollower.enabled = true;
 
             //Assign path by name
@@ -682,17 +685,19 @@ public class SceneManip : MonoBehaviour
 
             curFollower.endOfPathInstruction = EndOfPathInstruction.Stop;
 
-            float progress = (globalTime.currTime - curCommand.time);// / Convert.ToSingle(terms[3]);
+            float progress = (globalTime.currTime - curCommand.time) / Convert.ToSingle(terms[3]);
             float distance = progress * curCreator.path.length;
 
             curFollower.offsetPosition = distance;
-            curFollower.pathChanged = true;
 
             if(terms.Count() >= 8)
             {
                 Vector3 initAngles = new Vector3(Convert.ToSingle(terms[5]), Convert.ToSingle(terms[6]), Convert.ToSingle(terms[7]));
                 curFollower.offsetRotation = Quaternion.Euler(initAngles);
             }
+
+            if(SettingsManager.pathsVisible) curCreator.DrawPath();
+            pathObject.tag = "ActivePath";
         }
         return 0;
     }
@@ -712,6 +717,7 @@ public class SceneManip : MonoBehaviour
             setCurGameObject(terms[1]);
             
             PathFollower curFollower = curObject.GetComponent<PathFollower>();
+            curFollower.distanceTravelled = curFollower.offsetPosition;
 
             //Ensure object is following a path
             if(curFollower != null) curFollower.pathCreator = null;

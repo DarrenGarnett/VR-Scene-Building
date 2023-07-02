@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using System.IO;
 
 namespace PathCreation {
     public class PathCreator : MonoBehaviour {
@@ -14,6 +15,7 @@ namespace PathCreation {
         [SerializeField, HideInInspector]
         bool initialized;
         Vector3 prevPosition;
+        private bool visible;
 
         GlobalDisplaySettings globalEditorDisplaySettings;
 
@@ -73,20 +75,64 @@ namespace PathCreation {
             }
         }
 
+        public void ClearPath()
+        {
+            if(path != null) 
+            {
+                gameObject.TryGetComponent<LineRenderer>(out LineRenderer lineRend);
+                if(lineRend == null) lineRend = gameObject.AddComponent<LineRenderer>() as LineRenderer;
+                else 
+                {
+                    lineRend.positionCount = 0;
+                }
+            }
+        }
+
+        bool getPathVisibility()
+        {
+            string streamingPath = Application.streamingAssetsPath;
+            string[] path = streamingPath.Split('/');
+            string rootPath = "";
+            for(int i = 0; i < path.Length - 2; i++) rootPath += "/" + path[i];
+            rootPath = rootPath.Remove(0, 1);
+
+            string[] lines = File.ReadAllLines(rootPath + "/settings.txt");
+
+            //Debug.Log("Visible in pathcreator?: " + bool.Parse(lines[0].Split(':')[1]));
+            return bool.Parse(lines[0].Split(':')[1]);
+        }
+
         void Start()
         {
             prevPosition = new Vector3(0, 0, 0);
+            visible = getPathVisibility();
         }
 
         void Update()
         {
-            if(prevPosition != transform.position && gameObject.tag == "Runtime")
+            /*if(prevPosition != transform.position && gameObject.tag == "Runtime")
             {
-                if(gameObject.name.Equals("UpHill")) Debug.Log(prevPosition);
-                //Debug.LogError("Path transform changed, redrawing...");
                 DrawPath();
                 prevPosition = transform.position;
+            }*/
+
+            if(!getPathVisibility())
+            {
+                ClearPath();
             }
+            else
+            {
+                if(gameObject.tag == "Runtime" || gameObject.tag == "ActivePath") DrawPath();
+            }
+            /*else
+            {
+                Debug.Log("path is visible...");
+                if(visible != getPathVisibility()) 
+                {
+                    DrawPath();
+                    visible = getPathVisibility();
+                }
+            }*/
         }
 
         #region Internal methods
