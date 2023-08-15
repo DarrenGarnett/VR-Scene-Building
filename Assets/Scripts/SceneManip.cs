@@ -653,7 +653,7 @@ public class SceneManip : MonoBehaviour
         return 0;
     }
 
-    //Puts the specifeied object on the specified path
+    //Puts the specified object on the specified path
     int move(string[] terms, float timeScale)
     {
         //Test for minimum terms

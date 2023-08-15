@@ -59,10 +59,11 @@ namespace PathCreation {
 
                 //https://forum.unity.com/threads/cant-set-color-for-linerenderer-always-comes-out-as-magenta-or-black.968447/
                 //lineRend.material = new Material(Shader.Find("PathLine"));
-                lineRend.material = (Material)Resources.Load("PathLine", typeof(Material));
+                //lineRend.material = (Material)Resources.Load("PathLine", typeof(Material));
+                lineRend.material = new Material(Shader.Find("Legacy Shaders/Particles/Alpha Blended Premultiply"));
 
-                //lineRend.startColor = Color.green;
-                //lineRend.endColor = Color.green;
+                lineRend.startColor = Color.green;
+                lineRend.endColor = Color.green;
                 lineRend.startWidth = 0.4f;
                 lineRend.endWidth = 0.4f;
                 lineRend.loop = false;
