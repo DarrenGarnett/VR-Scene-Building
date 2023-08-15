@@ -146,11 +146,12 @@ public class SceneManip : MonoBehaviour
     public SwitchCameraScript switchCamera;
     private GameObject curObject;
     //private string[] commands;
-    private int index = 0;
+    public int index = 0;
     private Command curCommand;
-    private CommandList commandList;
+    public CommandList commandList;
     private bool waited = false;
     private float sceneDuration = 0;
+    public PathManager pathManager;
 
     void setCurGameObject(string name)
     {
@@ -483,18 +484,23 @@ public class SceneManip : MonoBehaviour
             return 1;
         }
 
-        //Instantiate prefab as new object
-        GameObject NewGameObj = Instantiate(curObject) as GameObject;
+        //Instantiate prefab as new object under the parent
+        GameObject parent = GameObject.FindGameObjectWithTag("CreateParent");
+        GameObject newGameObj = Instantiate(curObject, parent.transform) as GameObject;
+
+        //Check if new object has a renderer, and add on if not
+        newGameObj.TryGetComponent<MeshRenderer>(out MeshRenderer rend);
+        if(rend == null) rend = newGameObj.AddComponent<MeshRenderer>() as MeshRenderer;
 
         //Mark object as created during runtime
-        NewGameObj.tag = "Runtime";
+        newGameObj.tag = "Runtime";
 
         //Apply all values to the new GameObject
-        NewGameObj.name = objectName;
-        NewGameObj.transform.position = curObject.transform.position + new Vector3(xpos, ypos, zpos);
-        NewGameObj.transform.rotation = curObject.transform.rotation;
+        newGameObj.name = objectName;
+        newGameObj.transform.position = curObject.transform.position + new Vector3(xpos, ypos, zpos);
+        newGameObj.transform.rotation = curObject.transform.rotation;
 
-        switchCamera.addTarget(NewGameObj);
+        switchCamera.addTarget(newGameObj);
 
         return 0;
     }
@@ -603,6 +609,12 @@ public class SceneManip : MonoBehaviour
             //initialize path to construct
             GameObject pathObject = new GameObject(terms[1]);
             pathObject.tag = "Runtime";
+
+            GameObject parent = GameObject.FindGameObjectWithTag("PathParent");
+            pathObject.transform.parent = parent.transform;
+
+            pathManager.updatePaths();
+
             pathObject.AddComponent<PathCreator>();
             PathCreator pathCreator = pathObject.GetComponent<PathCreator>() as PathCreator;
             BezierPath path = pathCreator.bezierPath;
@@ -662,13 +674,17 @@ public class SceneManip : MonoBehaviour
             Debug.LogError("Too few terms to move object.");
             return 1;
         }
+        else if(!GameObject.Find(terms[2]))
+        {
+            Debug.LogError("Path '" + terms[2] + "' is not in the scene.");
+        }
         else
         {
             //Initialize path script
             //curObject = GameObject.Find(terms[1]);
             setCurGameObject(terms[1]);
             
-            //Get PathFollower component if ther is one, and add one if there isn't
+            //Get PathFollower component if there is one, and add one if there isn't
             curObject.TryGetComponent<PathFollower>(out PathFollower curFollower);
             if(curFollower == null) curFollower = curObject.AddComponent<PathFollower>() as PathFollower;
             else curFollower.pathChanged = true;
@@ -819,8 +835,7 @@ public class SceneManip : MonoBehaviour
         return result;
     }
 
-    // Start is called before the first frame update
-    void Start()
+    public void initCommandList()
     {
         //get list for entire input file
         commandList = new CommandList("main.txt");
@@ -862,6 +877,14 @@ public class SceneManip : MonoBehaviour
         //globalTime.ResetSlider(commandList.commands[commandList.commands.Count - 1].time);
         if(sceneDuration == 0) GlobalTimeScript.ResetSlider(Convert.ToSingle(bounds.Split('-')[2]));
         else GlobalTimeScript.ResetSlider(sceneDuration);
+
+        index = 0;
+    }
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        initCommandList();
         //Debug.Log(GlobalTimeScript.runtime);
 
         if(!PauseScript.paused)PauseScript.PauseFunction();
@@ -1049,6 +1072,19 @@ public class SceneManip : MonoBehaviour
         }
     }
 
+    public static void clearScene()
+    {
+        //Reset follow camera target list
+        //switchCamera.clearTargets();
+
+        GameObject[] createdObjects = GameObject.FindGameObjectsWithTag("Runtime");
+        foreach(GameObject obj in createdObjects) 
+        {
+            //Debug.LogError("Deleting " + obj.name);
+            if(obj != null) Destroy(obj);
+        }
+    }
+
     // Update is called once per frame
     void Update()
     {
@@ -1062,7 +1098,7 @@ public class SceneManip : MonoBehaviour
                 //Debug.LogError("Time change detected.");
                 //if(PauseScript.paused) pauseTime.PauseFunction();
                 if(PauseScript.paused)PauseScript.PauseFunction();
-
+/*
                 //Mark created objects for destruction(happens at the end of current frame)
                 GameObject[] createdObjects = GameObject.FindGameObjectsWithTag("Runtime");
                 foreach(GameObject obj in createdObjects) 
@@ -1070,6 +1106,8 @@ public class SceneManip : MonoBehaviour
                     //Debug.LogError("Deleting " + obj.name);
                     if(obj != null) Destroy(obj);
                 }
+*/
+                clearScene();
 
                 //Have to wait one frame for old objects to destroy, and then execute commands
                 StartCoroutine(waitOneFrame());

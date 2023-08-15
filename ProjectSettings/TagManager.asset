@@ -11,6 +11,8 @@ TagManager:
   - Path
   - ActivePath
   - Waypoint
+  - CreateParent
+  - PathParent
   layers:
   - Default
   - TransparentFX

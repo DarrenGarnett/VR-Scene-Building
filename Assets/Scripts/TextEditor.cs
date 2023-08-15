@@ -14,6 +14,8 @@ public class TextEditor : MonoBehaviour
     private string curText;
     private string curFile;
     private bool editsMade;
+    public GlobalTimeScript GTS;
+    public SceneManip sceneManip;
     
     void Start()
     {
@@ -67,8 +69,14 @@ public class TextEditor : MonoBehaviour
         if(editsMade)
         {
             editsMade = false;
-            Scene curScene = SceneManager.GetActiveScene();
-            SceneManager.LoadScene(curScene.name);
+            //Scene curScene = SceneManager.GetActiveScene();
+            //SceneManager.LoadScene(curScene.name);
+
+            GTS.currTime = 0f;
+            //GlobalTimeScript.positionSlider.value = 0;
+            //sceneManip.index = sceneManip.commandList.getIndexAtTime(GTS.currTime);
+            SceneManip.clearScene();
+            sceneManip.initCommandList();
         }
         else if(PauseScript.paused) PauseScript.PauseFunction();
     }

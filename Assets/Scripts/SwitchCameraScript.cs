@@ -33,7 +33,7 @@ public class SwitchCameraScript : MonoBehaviour
         size = models.Count;
         initSize = size;
 
-        mainCameraControls = GameObject.FindGameObjectWithTag("MainCameraMovement");
+        mainCameraControls = GameObject.FindGameObjectWithTag("MainCamera");
         modelsIdx = 0;
         //CameraFollow.target = models[modelsIdx];
         CameraFollow.target = null;

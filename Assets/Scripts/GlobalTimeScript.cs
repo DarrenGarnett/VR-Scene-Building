@@ -14,7 +14,7 @@ public class GlobalTimeScript : MonoBehaviour, IPointerDownHandler, IPointerUpHa
     public bool isBeingControlledByUser;
     public bool timeChanged;
 
-    private static Slider positionSlider;
+    public static Slider positionSlider;
 
     // Start is called before the first frame update
     void Start()

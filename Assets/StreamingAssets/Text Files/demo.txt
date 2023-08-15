@@ -32,6 +32,7 @@ MOVE Dumptruck5 segment1 10
 TIME 10
 MOVE Dumptruck6 segment1 10
 MOVE Dumptruck1 segment2 10
+PATH NewPath +segment1 +segment2
 
 TIME 12
 MOVE Dumptruck2 segment2 10
@@ -47,19 +48,6 @@ MOVE Dumptruck5 segment2 10
 
 TIME 20
 MOVE Dumptruck6 segment2 10
-MOVE Dumptruck1 segment1 10
-
-TIME 22
-MOVE Dumptruck2 segment1 10
-
-TIME 24
-MOVE Dumptruck3 segment1 10
-
-TIME 26
-MOVE Dumptruck4 segment1 10
-
-TIME 28
-MOVE Dumptruck5 segment1 10
+MOVE Dumptruck1 Path5 10
 
 TIME 30
-MOVE Dumptruck6 segment1 10
