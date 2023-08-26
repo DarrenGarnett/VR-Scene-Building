@@ -16,7 +16,7 @@ public class SwitchCameraScript : MonoBehaviour
     int modelsIdx;
 
     // Main camera and follow camera
-    public Camera mainCamera, followCamera;
+    public Camera mainCamera, followCamera, topdownCamera;
 
     // UI element to control the movement of the main camera
     private GameObject mainCameraControls;
@@ -26,6 +26,7 @@ public class SwitchCameraScript : MonoBehaviour
         mainCameraActive = true;
         mainCamera.enabled = true;
         followCamera.enabled = false;
+        topdownCamera.enabled = false;
 
         //Get any target objects within the scene objects before runtime with Target tag
         GameObject[] modelsArray = GameObject.FindGameObjectsWithTag("Target");
@@ -48,12 +49,16 @@ public class SwitchCameraScript : MonoBehaviour
          */
         if(mainCameraActive)
         {
-            mainCamera.enabled = false;
-            mainCameraActive = false;
-            followCamera.enabled = true;
-            CameraFollow.target = models[modelsIdx];
-            mainCameraControls.SetActive(false);
-            CameraMovement.drag = false;
+            if(size != 0)
+            {
+                mainCamera.enabled = false;
+                mainCameraActive = false;
+                followCamera.enabled = true;
+                CameraFollow.target = models[modelsIdx];
+                mainCameraControls.SetActive(false);
+                CameraMovement.drag = false;
+           }
+            else Debug.Log("No targets, doing nothing...");
         }
         /*
          * Case where followCamera is using the last model in models;
@@ -77,6 +82,26 @@ public class SwitchCameraScript : MonoBehaviour
         {
             modelsIdx++;
             CameraFollow.target = models[modelsIdx];
+        }
+    }
+
+    public void ToggleTopDownView()
+    {
+        if(topdownCamera.enabled)
+        {
+            //Debug.Log("Exiting topdown...");
+            mainCamera.enabled = true;
+            mainCameraActive = true;
+            followCamera.enabled = false;
+            topdownCamera.enabled = false;
+        }
+        else
+        {
+            //Debug.Log("Switching to topdown...");
+            mainCamera.enabled = false;
+            mainCameraActive = false;
+            followCamera.enabled = false;
+            topdownCamera.enabled = true;
         }
     }
 

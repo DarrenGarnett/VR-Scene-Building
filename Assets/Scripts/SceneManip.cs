@@ -683,37 +683,40 @@ public class SceneManip : MonoBehaviour
             //Initialize path script
             //curObject = GameObject.Find(terms[1]);
             setCurGameObject(terms[1]);
-            
-            //Get PathFollower component if there is one, and add one if there isn't
-            curObject.TryGetComponent<PathFollower>(out PathFollower curFollower);
-            if(curFollower == null) curFollower = curObject.AddComponent<PathFollower>() as PathFollower;
-            else curFollower.pathChanged = true;
-            curFollower.enabled = true;
-
-            //Assign path by name
-            GameObject pathObject = GameObject.Find(terms[2]);
-            PathCreator curCreator = pathObject.GetComponent<PathCreator>() as PathCreator;
-
-            curFollower.pathCreator = curCreator;
-
-            //Set cycle duration
-            curFollower.cycleDuration = Convert.ToSingle(terms[3]) / timeScale;
-
-            curFollower.endOfPathInstruction = EndOfPathInstruction.Stop;
-
-            float progress = (globalTime.currTime - curCommand.time) / Convert.ToSingle(terms[3]);
-            float distance = progress * curCreator.path.length;
-
-            curFollower.offsetPosition = distance;
-
-            if(terms.Count() >= 8)
+            if(curObject)
             {
-                Vector3 initAngles = new Vector3(Convert.ToSingle(terms[5]), Convert.ToSingle(terms[6]), Convert.ToSingle(terms[7]));
-                curFollower.offsetRotation = Quaternion.Euler(initAngles);
-            }
+                //Get PathFollower component if there is one, and add one if there isn't
+                curObject.TryGetComponent<PathFollower>(out PathFollower curFollower);
+                if(curFollower == null) curFollower = curObject.AddComponent<PathFollower>() as PathFollower;
+                else curFollower.pathChanged = true;
+                curFollower.enabled = true;
 
-            if(SettingsManager.pathsVisible) curCreator.DrawPath();
-            pathObject.tag = "ActivePath";
+                //Assign path by name
+                GameObject pathObject = GameObject.Find(terms[2]);
+                PathCreator curCreator = pathObject.GetComponent<PathCreator>() as PathCreator;
+
+                curFollower.pathCreator = curCreator;
+
+                //Set cycle duration
+                curFollower.cycleDuration = Convert.ToSingle(terms[3]) / timeScale;
+
+                curFollower.endOfPathInstruction = EndOfPathInstruction.Stop;
+
+                float progress = (globalTime.currTime - curCommand.time) / Convert.ToSingle(terms[3]);
+                float distance = progress * curCreator.path.length;
+
+                curFollower.offsetPosition = distance;
+
+                if(terms.Count() >= 8)
+                {
+                    Vector3 initAngles = new Vector3(Convert.ToSingle(terms[5]), Convert.ToSingle(terms[6]), Convert.ToSingle(terms[7]));
+                    curFollower.offsetRotation = Quaternion.Euler(initAngles);
+                }
+
+                if(SettingsManager.pathsVisible) curCreator.DrawPath();
+                pathObject.tag = "ActivePath";
+            }
+            else Debug.LogError("MOVE: " + terms[1] + " was not found in the scene.");
         }
         return 0;
     }
