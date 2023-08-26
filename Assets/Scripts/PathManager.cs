@@ -18,11 +18,12 @@ public class PathManager : MonoBehaviour
     private PathCreator buildingCreator;
     public float heightAboveTerrain = 0.25f;
     private LineRenderer normalRend;
-    private int viewDimension = 3;
+    //private int viewDimension = 3;
 
     public TMP_Dropdown pathDropdown;
     public TMP_InputField pathNameInput;
     public TextMeshProUGUI viewButtonText;
+    private bool editingPathName = false;
     
     void Start()
     {
@@ -43,7 +44,7 @@ public class PathManager : MonoBehaviour
 
         viewButtonText.text = "3D";
     }
-
+/*
     public void changeOrientation()
     {
         if(viewDimension == 2)
@@ -57,7 +58,7 @@ public class PathManager : MonoBehaviour
             viewButtonText.text = "2D";
         }
     }
-
+*/
     public void updateDropdown()
     {
         pathDropdown.options.Clear();
@@ -272,6 +273,22 @@ public class PathManager : MonoBehaviour
 
                 
             }
+        }
+
+        // Block camera movement while in the path name text box
+        if(pathNameInput.isFocused)
+        {
+            //Debug.Log("In path name input.");
+            editingPathName = true;
+            CameraMovement.lockMovement = true;
+        }
+
+        // Allow camera movement once out of the path name text box
+        if(editingPathName != pathNameInput.isFocused)
+        {
+            //Debug.Log("No longer editing path name.");
+            editingPathName = false;
+            CameraMovement.lockMovement = false;
         }
     }
 }

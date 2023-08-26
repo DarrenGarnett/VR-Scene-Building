@@ -7,11 +7,11 @@ public class UIDetectScript : MonoBehaviour, IPointerEnterHandler, IPointerExitH
 {
     void IPointerEnterHandler.OnPointerEnter(PointerEventData eventData)
     {
-        CameraMovement.drag = false;
+        //CameraMovement.drag = false;
     }
 
     void IPointerExitHandler.OnPointerExit(PointerEventData eventData)
     {
-        CameraMovement.drag = true;
+        //CameraMovement.drag = true;
     }
 }
