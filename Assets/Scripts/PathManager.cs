@@ -18,11 +18,9 @@ public class PathManager : MonoBehaviour
     private PathCreator buildingCreator;
     public float heightAboveTerrain = 0.25f;
     private LineRenderer normalRend;
-    //private int viewDimension = 3;
 
     public TMP_Dropdown pathDropdown;
     public TMP_InputField pathNameInput;
-    public TextMeshProUGUI viewButtonText;
     private bool editingPathName = false;
     
     void Start()
@@ -41,24 +39,8 @@ public class PathManager : MonoBehaviour
         normalRend = gameObject.GetComponent<LineRenderer>();
         normalRend.startWidth = 0.05f;
         normalRend.endWidth = 0.05f;
+    }
 
-        viewButtonText.text = "3D";
-    }
-/*
-    public void changeOrientation()
-    {
-        if(viewDimension == 2)
-        {
-            viewDimension = 3;
-            viewButtonText.text = "3D";
-        }
-        else
-        {
-            viewDimension = 2;
-            viewButtonText.text = "2D";
-        }
-    }
-*/
     public void updateDropdown()
     {
         pathDropdown.options.Clear();
@@ -105,7 +87,6 @@ public class PathManager : MonoBehaviour
         clearEditNodes();
 
         pathNameInput.text = "Path" + paths.Count;
-        //InputSystem.DisableDevice(Keyboard.current);
 
         inPathEdit = false;
         inPathCreation = true;

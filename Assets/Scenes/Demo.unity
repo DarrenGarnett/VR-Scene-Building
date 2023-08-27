@@ -6320,6 +6320,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   panSpeed: 5
   moveSpeed: 1
+  cameraStaysLevel: 1
+  topdownMode: 0
+  topdownButtonText: {fileID: 1108104885}
 --- !u!81 &1186333279
 AudioListener:
   m_ObjectHideFlags: 0
@@ -6462,7 +6465,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1204351559}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1186333278}
+        m_TargetAssemblyTypeName: CameraMovement, Assembly-CSharp
+        m_MethodName: ToggleTopdown
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &1204351559
 MonoBehaviour:
   m_ObjectHideFlags: 0

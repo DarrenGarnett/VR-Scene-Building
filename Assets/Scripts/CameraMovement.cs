@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
 public class CameraMovement : MonoBehaviour
 {
@@ -12,7 +13,15 @@ public class CameraMovement : MonoBehaviour
     private Vector3 curPos;
     private Quaternion initRot;
 
+    private Rigidbody cameraBody;
+
     public static bool lockMovement = false;
+    public bool cameraStaysLevel = true;
+
+    public bool topdownMode = false;
+    public TextMeshProUGUI topdownButtonText;
+
+    private float zoomOffset = 0;
 
     void Start()
     {
@@ -20,30 +29,57 @@ public class CameraMovement : MonoBehaviour
         initPos = this.transform.position;
         curPos = initPos;
         initRot = this.transform.rotation;
+
+        cameraBody = this.GetComponent<Rigidbody>();
+
+        topdownButtonText.text = "to 2D";
     }
 
     void FixedUpdate()
     {
         if(!lockMovement)
         {
-            // Handle click dragging
-            if(Input.GetMouseButton(0) || Input.GetMouseButtonDown(0))
+            if(topdownMode)
             {
-                Debug.Log("Dragging...");
-                this.transform.eulerAngles += panSpeed * new Vector3(-Input.GetAxis("Mouse Y"), Input.GetAxis("Mouse X"), 0);
+                // Handle axis input
+                Vector3 forwardMovement = (moveSpeed * Input.GetAxis("Vertical")) * transform.up;
+                Vector3 lateralMovement = (moveSpeed * Input.GetAxis("Horizontal")) * transform.right;
+
+                if(cameraStaysLevel)
+                {
+                    forwardMovement.y = 0;
+                    lateralMovement.y = 0;
+                }
+                
+                Vector3 verticalMovement = new Vector3(0, moveSpeed * (Convert.ToInt32(Input.GetKey("space")) - Convert.ToInt32(Input.GetKey(KeyCode.LeftShift))), 0);
+                zoomOffset += verticalMovement.y;
+                
+                curPos += forwardMovement + lateralMovement + verticalMovement;
             }
-            
-            // Handle axis input
-            if((Input.GetAxis("Horizontal") != 0) || (Input.GetAxis("Vertical") != 0)) Debug.Log("Moving...");
+            else
+            {
+                // Handle click dragging
+                if(Input.GetMouseButton(0) || Input.GetMouseButtonDown(0))
+                {
+                    this.transform.eulerAngles += panSpeed * new Vector3(-Input.GetAxis("Mouse Y"), Input.GetAxis("Mouse X"), 0);
+                }
 
-            float xinput = moveSpeed * Input.GetAxis("Horizontal");
-            float yinput = moveSpeed * (Convert.ToInt32(Input.GetKey("space")) - Convert.ToInt32(Input.GetKey(KeyCode.LeftShift)));
-            float zinput = moveSpeed * Input.GetAxis("Vertical");
-            curPos += new Vector3(xinput, yinput, zinput);
+                // Handle axis input
+                Vector3 forwardMovement = (moveSpeed * Input.GetAxis("Vertical")) * transform.forward;
+                Vector3 lateralMovement = (moveSpeed * Input.GetAxis("Horizontal")) * transform.right;
 
-            this.GetComponent<Rigidbody>().MovePosition(curPos);
-            //this.GetComponent<Rigidbody>().AddRelativeForce(new Vector3(speed * Input.GetAxis("Horizontal"), 0, speed * Input.GetAxis("Vertical")));
+                if(cameraStaysLevel)
+                {
+                    forwardMovement.y = 0;
+                    lateralMovement.y = 0;
+                }
+                
+                Vector3 verticalMovement = new Vector3(0, moveSpeed * (Convert.ToInt32(Input.GetKey("space")) - Convert.ToInt32(Input.GetKey(KeyCode.LeftShift))), 0);
+                curPos += forwardMovement + lateralMovement + verticalMovement;
+            }
         }
+
+        cameraBody.MovePosition(curPos);
     }
 
     public void ResetCamera()
@@ -56,5 +92,25 @@ public class CameraMovement : MonoBehaviour
     public static void SetLock(bool val)
     {
         lockMovement = val;
+    }
+
+    public void ToggleTopdown()
+    {
+        if(topdownMode)
+        {
+            // Revert topdown transformations
+            transform.eulerAngles += new Vector3(-90, 0, 0);
+            curPos += new Vector3(0, -40 - zoomOffset, -40 - zoomOffset);
+            topdownButtonText.text = "to 2D";
+        }
+        else 
+        {
+            // Apply topdown transformations
+            transform.eulerAngles += new Vector3(90, 0, 0);
+            curPos += new Vector3(0, 40 + zoomOffset, 40 + zoomOffset);
+            topdownButtonText.text = "to 3D";
+        }
+
+        topdownMode = !topdownMode;
     }
 }
