@@ -22,6 +22,8 @@ public class PathManager : MonoBehaviour
     public TMP_Dropdown pathDropdown;
     public TMP_InputField pathNameInput;
     private bool editingPathName = false;
+
+    private GameObject selectedWaypoint;
     
     void Start()
     {
@@ -54,7 +56,7 @@ public class PathManager : MonoBehaviour
     public void updatePaths()
     {
         //paths = GameObject.FindGameObjectsWithTag("Path");
-        paths = Utility.getChildren(GameObject.FindGameObjectWithTag("PathParent"));
+        paths = Utility.GetChildren(GameObject.FindGameObjectWithTag("PathParent"));
         //foreach(GameObject path in paths) Debug.Log(path.name);
     }
 
@@ -188,73 +190,133 @@ public class PathManager : MonoBehaviour
         }
     }
 
-    // Update is called once per frame
+    public void AddWaypoint()
+    {
+        // Instantiate a waypoint at the adjusted position
+        GameObject newWaypoint = Instantiate(waypoint);
+
+        StartCoroutine(TrackMousePosition(newWaypoint));
+
+        WayPointUtil wayPointUtil = newWaypoint.GetComponent<WayPointUtil>();
+        
+        if(CameraMovement.topdownMode) wayPointUtil.Show2DAxes();
+        else wayPointUtil.Show3DAxes();
+
+    }
+
+    IEnumerator TrackMousePosition(GameObject obj)
+    {
+        while(!Input.GetMouseButtonDown(0))
+        {
+            if(CameraMovement.topdownMode) 
+            {
+                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+                RaycastHit hit;
+                if(Physics.Raycast(ray, out hit))
+                {
+                    obj.transform.position = hit.point;
+                    //Debug.Log("Distance from hit: " + hit.distance);
+                    float wayPointSize = hit.distance / 10;
+                    obj.transform.localScale = new Vector3(wayPointSize, wayPointSize, wayPointSize);
+                }
+            }
+
+            yield return null;
+        }
+    }
+
+    public void SelectWaypoint(GameObject newSelectedWaypoint)
+    {
+        /*// Clear previous axes if needed
+        if(selectedWaypoint) selectedWaypoint.GetComponent<WayPointUtil>().hideAxes();
+        
+        // Set current
+        if(CameraMovement.topdownMode) wayPointUtil.Show2DAxes();
+        else wayPointUtil.Show3DAxes();
+        
+        selectedWaypoint = selected;*/
+        if(selectedWaypoint) selectedWaypoint.GetComponent<WayPointUtil>().selected = false;
+        newSelectedWaypoint.GetComponent<WayPointUtil>().selected = true;
+        selectedWaypoint = newSelectedWaypoint;
+    }
+
+    public void DeleteWaypoint()
+    {
+
+    }
+
     void Update()
     {
-        if((Input.GetMouseButtonDown(0) && inPathCreation) && !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
+        /*if(CameraMovement.topdownMode)
         {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-            RaycastHit hit;
-
-            if(Physics.Raycast(ray, out hit))
+            if((Input.GetMouseButtonDown(0) && inPathCreation) && !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
             {
-                // Add the offset to the hit point's y-coordinate
-                Vector3 waypointPosition = hit.point + new Vector3(0, heightAboveTerrain, 0);
-                //Debug.Log("Waypoint at: " + waypointPosition);
+                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
-                // Instantiate a waypoint at the adjusted position
-                GameObject newWaypoint = Instantiate(waypoint, waypointPosition, Quaternion.identity);
+                RaycastHit hit;
 
-                waypoint.tag = "Waypoint";
-                wayPoints.Add(newWaypoint);
-
-                //buildingCreator.bezierPath.AddSegmentToEnd(waypointPosition);
-
-                if(wayPoints.Count == 2)
+                if(Physics.Raycast(ray, out hit))
                 {
-                    buildingCreator.bezierPath.DeleteSegment(0);
-                    buildingCreator.bezierPath.DeleteSegment(1);
-                }
+                    // Add the offset to the hit point's y-coordinate
+                    Vector3 waypointPosition = hit.point + new Vector3(0, heightAboveTerrain, 0);
+                    //Debug.Log("Waypoint at: " + waypointPosition);
 
-                if(wayPoints.Count >= 2) 
-                {
-                    List<Vector3> anchorPoints = new List<Vector3>();
-                    foreach(GameObject waypoint in wayPoints) anchorPoints.Add(waypoint.transform.position);
-                    buildingCreator.bezierPath = new BezierPath(anchorPoints);
+                    // Instantiate a waypoint at the adjusted position
+                    GameObject newWaypoint = Instantiate(waypoint, waypointPosition, Quaternion.identity);
 
-                    int rendPoints = 0;
-                    normalRend.positionCount = buildingCreator.path.localNormals.Length * 3;
+                    waypoint.tag = "Waypoint";
+                    wayPoints.Add(newWaypoint);
 
-                    for(int i = 0; i < buildingCreator.path.localNormals.Length; i++)
+                    //buildingCreator.bezierPath.AddSegmentToEnd(waypointPosition);
+
+                    if(wayPoints.Count == 2)
                     {
-                        buildingCreator.path.localPoints[i].y = Terrain.activeTerrain.SampleHeight(buildingCreator.path.localPoints[i]) + heightAboveTerrain;
-                
-                        Vector3 dir;
-                        if(i == 0) dir = buildingCreator.path.localPoints[i] - buildingCreator.path.localPoints[i + 1];
-                        else dir = buildingCreator.path.localPoints[i] - buildingCreator.path.localPoints[i - 1];
-                        //buildingCreator.path.localNormals[i] = Vector3.Cross(dir, Vector3.right).normalized;
-
-                        Vector3 curPoint = buildingCreator.path.localPoints[i];
-                        Vector3 curNorm = buildingCreator.path.localNormals[i];
-                        normalRend.SetPosition(rendPoints, curPoint);
-                        rendPoints++;
-                        normalRend.SetPosition(rendPoints, curPoint + curNorm);
-                        rendPoints++;
-                        normalRend.SetPosition(rendPoints, curPoint);
-                        rendPoints++;
+                        buildingCreator.bezierPath.DeleteSegment(0);
+                        buildingCreator.bezierPath.DeleteSegment(1);
                     }
 
-                    buildingCreator.DrawPathEdit();
+                    if(wayPoints.Count >= 2) 
+                    {
+                        List<Vector3> anchorPoints = new List<Vector3>();
+                        foreach(GameObject waypoint in wayPoints) anchorPoints.Add(waypoint.transform.position);
+                        buildingCreator.bezierPath = new BezierPath(anchorPoints);
+
+                        int rendPoints = 0;
+                        normalRend.positionCount = buildingCreator.path.localNormals.Length * 3;
+
+                        for(int i = 0; i < buildingCreator.path.localNormals.Length; i++)
+                        {
+                            buildingCreator.path.localPoints[i].y = Terrain.activeTerrain.SampleHeight(buildingCreator.path.localPoints[i]) + heightAboveTerrain;
+                    
+                            Vector3 dir;
+                            if(i == 0) dir = buildingCreator.path.localPoints[i] - buildingCreator.path.localPoints[i + 1];
+                            else dir = buildingCreator.path.localPoints[i] - buildingCreator.path.localPoints[i - 1];
+                            //buildingCreator.path.localNormals[i] = Vector3.Cross(dir, Vector3.right).normalized;
+
+                            Vector3 curPoint = buildingCreator.path.localPoints[i];
+                            Vector3 curNorm = buildingCreator.path.localNormals[i];
+                            normalRend.SetPosition(rendPoints, curPoint);
+                            rendPoints++;
+                            normalRend.SetPosition(rendPoints, curPoint + curNorm);
+                            rendPoints++;
+                            normalRend.SetPosition(rendPoints, curPoint);
+                            rendPoints++;
+                        }
+
+                        buildingCreator.DrawPathEdit();
+                    }
+
+                    //wayPoints.Add(waypoint);
+
+                    //GameObject[] waypoints = GameObject.FindGameObjectsWithTag("Waypoint");
+
+                    
                 }
-
-                //wayPoints.Add(waypoint);
-
-                //GameObject[] waypoints = GameObject.FindGameObjectsWithTag("Waypoint");
-
-                
             }
-        }
+        }*/
+
+
 
         // Block camera movement while in the path name text box
         if(pathNameInput.isFocused)

@@ -12,13 +12,14 @@ GameObject:
   - component: {fileID: 6559373816693448772}
   - component: {fileID: 7322296856043299834}
   - component: {fileID: 4767117610587558318}
+  - component: {fileID: 4825645956247215514}
   m_Layer: 0
   m_Name: Zaxis
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &7720510401149237965
 Transform:
   m_ObjectHideFlags: 0
@@ -107,6 +108,18 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
+--- !u!114 &4825645956247215514
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2674937221578889675}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 957bd5fd07ba2a943a1991e0032c5e4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &3998558185220526635
 GameObject:
   m_ObjectHideFlags: 0
@@ -119,13 +132,14 @@ GameObject:
   - component: {fileID: 3212393053493925832}
   - component: {fileID: 5788018188054289420}
   - component: {fileID: 5140027874326868263}
+  - component: {fileID: 421279675551051749}
   m_Layer: 0
   m_Name: Yaxis
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &5323320402299933266
 Transform:
   m_ObjectHideFlags: 0
@@ -214,6 +228,18 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
+--- !u!114 &421279675551051749
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3998558185220526635}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 957bd5fd07ba2a943a1991e0032c5e4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &6399294810012525832
 GameObject:
   m_ObjectHideFlags: 0
@@ -226,13 +252,14 @@ GameObject:
   - component: {fileID: 6465124844147457223}
   - component: {fileID: 303610790181777408}
   - component: {fileID: 2404642194277730659}
+  - component: {fileID: 61015471006486404}
   m_Layer: 0
   m_Name: Xaxis
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &8873732835247858970
 Transform:
   m_ObjectHideFlags: 0
@@ -321,6 +348,18 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
+--- !u!114 &61015471006486404
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6399294810012525832}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 957bd5fd07ba2a943a1991e0032c5e4d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &7825155248321367743
 GameObject:
   m_ObjectHideFlags: 0
@@ -333,8 +372,9 @@ GameObject:
   - component: {fileID: 1328953920002337997}
   - component: {fileID: 464939159085155531}
   - component: {fileID: 1732906686449113197}
+  - component: {fileID: 5753582671594172427}
   m_Layer: 0
-  m_Name: EditPoint
+  m_Name: WaypointOld
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -356,7 +396,7 @@ Transform:
   - {fileID: 5323320402299933266}
   - {fileID: 7720510401149237965}
   m_Father: {fileID: 0}
-  m_RootOrder: 4
+  m_RootOrder: -1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &1328953920002337997
 MeshFilter:
@@ -429,3 +469,17 @@ SphereCollider:
   serializedVersion: 3
   m_Radius: 0.5
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &5753582671594172427
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7825155248321367743}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9f26a62681d0bc4d98bc94044bb544d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pathManagerObj: {fileID: 0}
+  selected: 0

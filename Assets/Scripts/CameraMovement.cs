@@ -18,10 +18,13 @@ public class CameraMovement : MonoBehaviour
     public static bool lockMovement = false;
     public bool cameraStaysLevel = true;
 
-    public bool topdownMode = false;
+    public static bool topdownMode = false;
     public TextMeshProUGUI topdownButtonText;
 
     private float zoomOffset = 0;
+
+    public static bool disableDrag = false;
+    private Vector3 curRotation;
 
     void Start()
     {
@@ -33,6 +36,8 @@ public class CameraMovement : MonoBehaviour
         cameraBody = this.GetComponent<Rigidbody>();
 
         topdownButtonText.text = "to 2D";
+
+        curRotation = Vector3.zero;
     }
 
     void FixedUpdate()
@@ -59,9 +64,10 @@ public class CameraMovement : MonoBehaviour
             else
             {
                 // Handle click dragging
-                if(Input.GetMouseButton(0) || Input.GetMouseButtonDown(0))
+                if((Input.GetMouseButton(0) || Input.GetMouseButtonDown(0)) && !disableDrag)
                 {
                     this.transform.eulerAngles += panSpeed * new Vector3(-Input.GetAxis("Mouse Y"), Input.GetAxis("Mouse X"), 0);
+                    curRotation = this.transform.eulerAngles;
                 }
 
                 // Handle axis input
@@ -99,14 +105,14 @@ public class CameraMovement : MonoBehaviour
         if(topdownMode)
         {
             // Revert topdown transformations
-            transform.eulerAngles += new Vector3(-90, 0, 0);
+            transform.eulerAngles = curRotation;
             curPos += new Vector3(0, -40 - zoomOffset, -40 - zoomOffset);
             topdownButtonText.text = "to 2D";
         }
         else 
         {
             // Apply topdown transformations
-            transform.eulerAngles += new Vector3(90, 0, 0);
+            transform.eulerAngles = new Vector3(90, 0, 0);
             curPos += new Vector3(0, 40 + zoomOffset, 40 + zoomOffset);
             topdownButtonText.text = "to 3D";
         }
