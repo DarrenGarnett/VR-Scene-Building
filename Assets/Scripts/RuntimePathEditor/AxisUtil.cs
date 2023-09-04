@@ -10,7 +10,6 @@ public class AxisUtil : MonoBehaviour
     private float initMouseZ;
 
     private Vector3 prevPos;
-    public Vector3 deltaPos;
 
     void OnMouseDown()
     {
@@ -18,11 +17,11 @@ public class AxisUtil : MonoBehaviour
         initMouseZ = Camera.main.WorldToScreenPoint(transform.position).z;
 
         // Get initial mouse offset from axis
-        //initMouseOffset = transform.position - GetMouseWorldPos();
         initMouseOffset = transform.parent.transform.position - GetMouseWorldPos();
 
         prevPos = transform.position;
 
+        // Disable camera drag while dragging axis
         CameraMovement.disableDrag = true;
     }
 
@@ -33,10 +32,7 @@ public class AxisUtil : MonoBehaviour
 
     void OnMouseDrag()
     {
-        // Change position from difference in mouse position
-        //current position = current mouse position + initial position - initial mouse position)
-        //transform.position = GetMouseWorldPos() + initMouseOffset;
-        
+        // Change position from difference in mouse position        
         Vector3 worldPos = GetMouseWorldPos() + initMouseOffset;
         Vector3 curPos = transform.parent.transform.position;
         if(gameObject.name == "Xaxis") curPos.x = worldPos.x;
@@ -44,14 +40,6 @@ public class AxisUtil : MonoBehaviour
         if(gameObject.name == "Zaxis") curPos.z = worldPos.z;
 
         transform.parent.transform.position = curPos;
-
-        //transform.parent.transform.position = GetMouseWorldPos() + initMouseOffset;
-        
-        //Vector3 curPos = GetMouseWorldPos() + initMouseOffset;
-        //deltaPos = curPos - prevPos;
-        //prevPos = curPos;
-
-        //Debug.Log();
     }
 
     Vector3 GetMouseWorldPos()

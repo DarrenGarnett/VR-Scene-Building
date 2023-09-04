@@ -1,14 +1,15 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
-public class WayPointUtil : MonoBehaviour
+public class WaypointUtil : MonoBehaviour
 {
-    public GameObject pathManagerObj;
     private PathManager pathManager;
 
     GameObject xaxis, yaxis, zaxis;
     AxisUtil xutil, yutil, zutil;
+    TMP_Text label;
     public bool selected = false;
     
     public float waypointDistanceScaleFactor = 0.1f;
@@ -16,18 +17,29 @@ public class WayPointUtil : MonoBehaviour
 
     void Awake()
     {
-        List<GameObject> axes = Utility.GetChildren(gameObject);
-        xaxis = axes[0];
-        yaxis = axes[1];
-        zaxis = axes[2];
+        List<GameObject> children = Utility.GetChildren(gameObject);
+        xaxis = children[0];
+        yaxis = children[1];
+        zaxis = children[2];
+        label = children[3].GetComponent<TMP_Text>();
 
         xutil = xaxis.GetComponent<AxisUtil>();
         yutil = yaxis.GetComponent<AxisUtil>();
         zutil = zaxis.GetComponent<AxisUtil>();
 
-        pathManager = pathManagerObj.GetComponent<PathManager>();
+        pathManager = GameObject.FindGameObjectWithTag("PathManager").GetComponent<PathManager>();
 
         initScale = transform.localScale;
+    }
+
+    void Start()
+    {
+        label.text = (pathManager.GetWaypointIndex(gameObject) + 1).ToString();
+    }
+
+    public void SetLabel()
+    {
+        label.text = (pathManager.GetWaypointIndex(gameObject)).ToString();
     }
 
     void FixedUpdate()

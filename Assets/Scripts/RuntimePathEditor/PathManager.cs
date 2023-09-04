@@ -7,12 +7,16 @@ using PathCreation;
 
 public class PathManager : MonoBehaviour
 {
-    public GameObject waypoint;
+    
     public bool inPathCreation = false;
     public bool inPathEdit = false;
-    //public static GameObject[] paths;
+    
+    public GameObject waypointPrefab;
     public static List<GameObject> paths = new List<GameObject>();
-    private static List<GameObject> wayPoints = new List<GameObject>();
+    public List<GameObject> waypoints = new List<GameObject>();
+    private Vector3 waypointSpawn;
+    private int numSpawned;
+
     private GameObject curPath;
     private GameObject buildingPath;
     private PathCreator buildingCreator;
@@ -21,6 +25,7 @@ public class PathManager : MonoBehaviour
 
     public TMP_Dropdown pathDropdown;
     public TMP_InputField pathNameInput;
+    public GameObject removeButton;
     private bool editingPathName = false;
 
     private GameObject selectedWaypoint;
@@ -41,6 +46,10 @@ public class PathManager : MonoBehaviour
         normalRend = gameObject.GetComponent<LineRenderer>();
         normalRend.startWidth = 0.05f;
         normalRend.endWidth = 0.05f;
+
+        waypointSpawn = new Vector3(-10, 0, 0);
+        waypointSpawn.y = heightAboveTerrain + Terrain.activeTerrain.SampleHeight(waypointSpawn);
+        
     }
 
     public void updateDropdown()
@@ -126,7 +135,7 @@ public class PathManager : MonoBehaviour
         PathCreator creator = newPath.AddComponent<PathCreator>();
 
         List<Vector3> anchorPoints = new List<Vector3>();
-        foreach(GameObject waypoint in wayPoints) anchorPoints.Add(waypoint.transform.position);
+        foreach(GameObject waypoint in waypoints) anchorPoints.Add(waypoint.transform.position);
         creator.bezierPath = new BezierPath(anchorPoints);
         creator.bezierPath.GlobalNormalsAngle = 90;
         creator.enabled = true;
@@ -181,8 +190,8 @@ public class PathManager : MonoBehaviour
 
     public void clearWaypoints()
     {
-        GameObject[] waypoints = GameObject.FindGameObjectsWithTag("Waypoint");
-        wayPoints.Clear();
+        //GameObject[] waypoints = GameObject.FindGameObjectsWithTag("Waypoint");
+        waypoints.Clear();
 
         foreach(GameObject waypoint in waypoints)
         {
@@ -192,15 +201,31 @@ public class PathManager : MonoBehaviour
 
     public void AddWaypoint()
     {
-        // Instantiate a waypoint at the adjusted position
-        GameObject newWaypoint = Instantiate(waypoint);
+        // Instantiate a new waypoint at the adjusted position
+        GameObject newWaypoint = Instantiate(waypointPrefab);
 
-        StartCoroutine(TrackMousePosition(newWaypoint));
+        // Determine spawn point
+        if(numSpawned % 5 == 0) 
+        {
+            waypointSpawn.x = -10;
+            waypointSpawn.z = (numSpawned / 5) * -5;
+        }
+        else waypointSpawn.x += 5;
+        waypointSpawn.y = heightAboveTerrain + Terrain.activeTerrain.SampleHeight(waypointSpawn);
+        numSpawned++;
+        
+        newWaypoint.transform.position = waypointSpawn;
+
+        waypoints.Add(newWaypoint);
+
+        SelectWaypoint(newWaypoint);
+
+        /*StartCoroutine(TrackMousePosition(newWaypoint));
 
         WayPointUtil wayPointUtil = newWaypoint.GetComponent<WayPointUtil>();
         
         if(CameraMovement.topdownMode) wayPointUtil.Show2DAxes();
-        else wayPointUtil.Show3DAxes();
+        else wayPointUtil.Show3DAxes();*/
 
     }
 
@@ -217,8 +242,8 @@ public class PathManager : MonoBehaviour
                 {
                     obj.transform.position = hit.point;
                     //Debug.Log("Distance from hit: " + hit.distance);
-                    float wayPointSize = hit.distance / 10;
-                    obj.transform.localScale = new Vector3(wayPointSize, wayPointSize, wayPointSize);
+                    float waypointSize = hit.distance / 10;
+                    obj.transform.localScale = new Vector3(waypointSize, waypointSize, waypointSize);
                 }
             }
 
@@ -236,14 +261,33 @@ public class PathManager : MonoBehaviour
         else wayPointUtil.Show3DAxes();
         
         selectedWaypoint = selected;*/
-        if(selectedWaypoint) selectedWaypoint.GetComponent<WayPointUtil>().selected = false;
-        newSelectedWaypoint.GetComponent<WayPointUtil>().selected = true;
+        if(selectedWaypoint) selectedWaypoint.GetComponent<WaypointUtil>().selected = false;
+        newSelectedWaypoint.GetComponent<WaypointUtil>().selected = true;
         selectedWaypoint = newSelectedWaypoint;
+
+        // Show remove button for selected waypoint
+        removeButton.SetActive(true);
     }
 
     public void DeleteWaypoint()
     {
+        // Hide remove button since unselecting
+        removeButton.SetActive(false);
 
+        // Update waypoint labels
+        for(int i = GetWaypointIndex(selectedWaypoint); i < waypoints.Count; i++)
+        {
+            waypoints[i].GetComponent<WaypointUtil>().SetLabel();
+        }
+
+        waypoints.Remove(selectedWaypoint);
+
+        Destroy(selectedWaypoint);
+    }
+
+    public int GetWaypointIndex(GameObject waypoint)
+    {
+        return waypoints.IndexOf(waypoint);
     }
 
     void Update()
@@ -266,20 +310,20 @@ public class PathManager : MonoBehaviour
                     GameObject newWaypoint = Instantiate(waypoint, waypointPosition, Quaternion.identity);
 
                     waypoint.tag = "Waypoint";
-                    wayPoints.Add(newWaypoint);
+                    p.Add(newWaypoint);
 
                     //buildingCreator.bezierPath.AddSegmentToEnd(waypointPosition);
 
-                    if(wayPoints.Count == 2)
+                    if(p.Count == 2)
                     {
                         buildingCreator.bezierPath.DeleteSegment(0);
                         buildingCreator.bezierPath.DeleteSegment(1);
                     }
 
-                    if(wayPoints.Count >= 2) 
+                    if(p.Count >= 2) 
                     {
                         List<Vector3> anchorPoints = new List<Vector3>();
-                        foreach(GameObject waypoint in wayPoints) anchorPoints.Add(waypoint.transform.position);
+                        foreach(GameObject waypoint in p) anchorPoints.Add(waypoint.transform.position);
                         buildingCreator.bezierPath = new BezierPath(anchorPoints);
 
                         int rendPoints = 0;
@@ -307,7 +351,7 @@ public class PathManager : MonoBehaviour
                         buildingCreator.DrawPathEdit();
                     }
 
-                    //wayPoints.Add(waypoint);
+                    //p.Add(waypoint);
 
                     //GameObject[] waypoints = GameObject.FindGameObjectsWithTag("Waypoint");
 
