@@ -105,13 +105,13 @@ namespace PathCreation {
                 }
 
                 //draw ends
-                GameObject startPoint = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+                /*GameObject startPoint = GameObject.CreatePrimitive(PrimitiveType.Capsule);
                 startPoint.transform.position = path.GetPoint(0);
                 startPoint.tag = "PathEdit";
 
                 GameObject endPoint = GameObject.CreatePrimitive(PrimitiveType.Capsule);
                 endPoint.transform.position = path.GetPoint(path.NumPoints - 1);
-                endPoint.tag = "PathEdit";
+                endPoint.tag = "PathEdit";*/
 
             }
         }

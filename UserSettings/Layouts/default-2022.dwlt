@@ -19,7 +19,7 @@ MonoBehaviour:
     width: 1536
     height: 772.8
   m_ShowMode: 4
-  m_Title: Inspector
+  m_Title: Game
   m_RootView: {fileID: 2}
   m_MinSize: {x: 875, y: 300}
   m_MaxSize: {x: 10000, y: 10000}
@@ -120,7 +120,7 @@ MonoBehaviour:
   m_MinSize: {x: 300, y: 100}
   m_MaxSize: {x: 24288, y: 16192}
   vertical: 0
-  controlID: 127
+  controlID: 76
 --- !u!114 &6
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -145,7 +145,7 @@ MonoBehaviour:
   m_MinSize: {x: 100, y: 100}
   m_MaxSize: {x: 8096, y: 16192}
   vertical: 1
-  controlID: 41
+  controlID: 19
 --- !u!114 &7
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -165,8 +165,8 @@ MonoBehaviour:
     y: 0
     width: 281.6
     height: 359.2
-  m_MinSize: {x: 200, y: 200}
-  m_MaxSize: {x: 4000, y: 4000}
+  m_MinSize: {x: 201, y: 221}
+  m_MaxSize: {x: 4001, y: 4021}
   m_ActualView: {fileID: 14}
   m_Panes:
   - {fileID: 14}
@@ -191,8 +191,8 @@ MonoBehaviour:
     y: 359.2
     width: 281.6
     height: 363.59998
-  m_MinSize: {x: 100, y: 100}
-  m_MaxSize: {x: 4000, y: 4000}
+  m_MinSize: {x: 101, y: 121}
+  m_MaxSize: {x: 4001, y: 4021}
   m_ActualView: {fileID: 15}
   m_Panes:
   - {fileID: 15}
@@ -222,7 +222,7 @@ MonoBehaviour:
   m_MinSize: {x: 100, y: 100}
   m_MaxSize: {x: 8096, y: 16192}
   vertical: 1
-  controlID: 73
+  controlID: 77
 --- !u!114 &10
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -437,10 +437,10 @@ MonoBehaviour:
     m_OverlaysVisible: 1
   m_SceneHierarchy:
     m_TreeViewState:
-      scrollPos: {x: 0, y: 50.799988}
-      m_SelectedIDs: fab1ffff
-      m_LastClickedID: -19974
-      m_ExpandedIDs: 2efbfffffe5100007853000026540000ec540000
+      scrollPos: {x: 0, y: 130.79999}
+      m_SelectedIDs: 243fffff
+      m_LastClickedID: -49372
+      m_ExpandedIDs: 2efbffff90520000fc520000965300002254000010550000
       m_RenameOverlay:
         m_UserAcceptedRename: 0
         m_Name: 
@@ -841,9 +841,9 @@ MonoBehaviour:
   m_PlayAudio: 0
   m_AudioPlay: 0
   m_Position:
-    m_Target: {x: -0.6459184, y: 3.178631, z: 13.4917755}
+    m_Target: {x: -10.329515, y: -16.308464, z: -0.7388792}
     speed: 2
-    m_Value: {x: -0.2407651, y: 4.9967275, z: 0}
+    m_Value: {x: -10.329515, y: -16.308464, z: -0.7388792}
   m_RenderMode: 0
   m_CameraMode:
     drawMode: 0
@@ -889,13 +889,13 @@ MonoBehaviour:
     m_GridAxis: 1
     m_gridOpacity: 0.5
   m_Rotation:
-    m_Target: {x: -0.05937479, y: 0.0065774075, z: -0.0005771728, w: -0.9984167}
+    m_Target: {x: -0.67166066, y: 0.016135246, z: -0.015745766, w: -0.74080646}
     speed: 2
-    m_Value: {x: -0.059362773, y: 0.006576076, z: -0.00057705597, w: -0.99821466}
+    m_Value: {x: -0.67151606, y: 0.016131772, z: -0.015742376, w: -0.740647}
   m_Size:
-    m_Target: 10
+    m_Target: 10.42884
     speed: 2
-    m_Value: 0.642284
+    m_Value: 10.42884
   m_Ortho:
     m_Target: 0
     speed: 2
@@ -1037,7 +1037,7 @@ MonoBehaviour:
     m_SkipHidden: 0
     m_SearchArea: 1
     m_Folders:
-    - Assets/Scripts/RuntimePathEditor
+    - Assets/Scripts/Obsolete
     m_Globs: []
     m_OriginalText: 
     m_ImportLogFlags: 0
@@ -1045,16 +1045,16 @@ MonoBehaviour:
   m_ViewMode: 1
   m_StartGridSize: 64
   m_LastFolders:
-  - Assets/Scripts/RuntimePathEditor
+  - Assets/Scripts/Obsolete
   m_LastFoldersGridSize: -1
   m_LastProjectPath: C:\Users\darre\Documents\GitHub\VR-Scene-Building
   m_LockTracker:
     m_IsLocked: 0
   m_FolderTreeState:
-    scrollPos: {x: 0, y: 199.79999}
-    m_SelectedIDs: 3e560000
-    m_LastClickedID: 22078
-    m_ExpandedIDs: 0000000010560000125600002e56000000ca9a3b
+    scrollPos: {x: 0, y: 199}
+    m_SelectedIDs: 2c560000
+    m_LastClickedID: 22060
+    m_ExpandedIDs: 000000000c5600000e5600001056000000ca9a3b
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -1082,7 +1082,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: 
     m_LastClickedID: 0
-    m_ExpandedIDs: 000000001056000012560000
+    m_ExpandedIDs: 000000000c5600000e56000010560000
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
