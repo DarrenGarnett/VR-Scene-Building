@@ -93,6 +93,9 @@ public class CameraMovement : MonoBehaviour
         curPos = initPos;
         this.transform.position = initPos;
         this.transform.rotation = initRot;
+
+        topdownMode = false;
+        topdownButtonText.text = "to 2D";
     }
 
     public static void SetLock(bool val)

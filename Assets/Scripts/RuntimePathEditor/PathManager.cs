@@ -44,8 +44,8 @@ public class PathManager : MonoBehaviour
 
         buildingPath = new GameObject("BuildingPath");
 
-        GameObject parent = GameObject.FindGameObjectWithTag("PathParent");
-        buildingPath.transform.parent = parent.transform;
+        //GameObject parent = GameObject.FindGameObjectWithTag("PathParent");
+        //buildingPath.transform.parent = parent.transform;
         buildingCreator = buildingPath.AddComponent<PathCreator>();
         buildingCreator.bezierPath.DeleteSegment(0);
         buildingCreator.bezierPath.DeleteSegment(1);
@@ -63,72 +63,6 @@ public class PathManager : MonoBehaviour
 
     void Update()
     {
-        /*if(CameraMovement.topdownMode)
-        {
-            if((Input.GetMouseButtonDown(0) && inPathCreation) && !UnityEngine.EventSystems.EventSystem.current.IsPointerOverGameObject())
-            {
-                Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-
-                RaycastHit hit;
-
-                if(Physics.Raycast(ray, out hit))
-                {
-                    // Add the offset to the hit point's y-coordinate
-                    Vector3 waypointPosition = hit.point + new Vector3(0, heightAboveTerrain, 0);
-                    //Debug.Log("Waypoint at: " + waypointPosition);
-
-                    // Instantiate a waypoint at the adjusted position
-                    GameObject newWaypoint = Instantiate(waypoint, waypointPosition, Quaternion.identity);
-
-                    waypoint.tag = "Waypoint";
-                    p.Add(newWaypoint);
-
-                    //buildingCreator.bezierPath.AddSegmentToEnd(waypointPosition);
-
-                    if(p.Count == 2)
-                    {
-                        buildingCreator.bezierPath.DeleteSegment(0);
-                        buildingCreator.bezierPath.DeleteSegment(1);
-                    }
-
-                    if(p.Count >= 2) 
-                    {
-                        List<Vector3> anchorPoints = new List<Vector3>();
-                        foreach(GameObject waypoint in p) anchorPoints.Add(waypoint.transform.position);
-                        buildingCreator.bezierPath = new BezierPath(anchorPoints);
-
-                        int rendPoints = 0;
-                        normalRend.positionCount = buildingCreator.path.localNormals.Length * 3;
-
-                        for(int i = 0; i < buildingCreator.path.localNormals.Length; i++)
-                        {
-                            buildingCreator.path.localPoints[i].y = Terrain.activeTerrain.SampleHeight(buildingCreator.path.localPoints[i]) + heightAboveTerrain;
-                    
-                            Vector3 dir;
-                            if(i == 0) dir = buildingCreator.path.localPoints[i] - buildingCreator.path.localPoints[i + 1];
-                            else dir = buildingCreator.path.localPoints[i] - buildingCreator.path.localPoints[i - 1];
-                            //buildingCreator.path.localNormals[i] = Vector3.Cross(dir, Vector3.right).normalized;
-
-                            Vector3 curPoint = buildingCreator.path.localPoints[i];
-                            Vector3 curNorm = buildingCreator.path.localNormals[i];
-                            normalRend.SetPosition(rendPoints, curPoint);
-                            rendPoints++;
-                            normalRend.SetPosition(rendPoints, curPoint + curNorm);
-                            rendPoints++;
-                            normalRend.SetPosition(rendPoints, curPoint);
-                            rendPoints++;
-                        }
-
-                        buildingCreator.DrawPathEdit();
-                    }
-
-                    //p.Add(waypoint);
-
-                    //GameObject[] waypoints = GameObject.FindGameObjectsWithTag("Waypoint");
-                }
-            }
-        }*/
-
         // Block camera movement while in the path name text box
         if(pathNameInput.isFocused)
         {
@@ -156,7 +90,12 @@ public class PathManager : MonoBehaviour
         }
     }
 
-    void SnapPath()
+    public void TogglePathSnapped()
+    {
+        snapToGround = !snapToGround;
+    }
+
+    void SnapPath(PathCreator creator)
     {
         foreach(GameObject waypoint in waypoints)
         {
@@ -164,20 +103,15 @@ public class PathManager : MonoBehaviour
             waypoint.transform.position = groundPos;
         }
 
-        for(int i = 0; i < buildingCreator.path.localNormals.Length; i++)
+        for(int i = 0; i < creator.path.localNormals.Length; i++)
         {
-            buildingCreator.path.localPoints[i].y = Terrain.activeTerrain.SampleHeight(buildingCreator.path.localPoints[i]) + heightAboveTerrain;
+            creator.path.localPoints[i].y = Terrain.activeTerrain.SampleHeight(creator.path.localPoints[i]) + heightAboveTerrain;
         
             Vector3 dir;
-            if(i == 0) dir = buildingCreator.path.localPoints[i] - buildingCreator.path.localPoints[i + 1];
-            else dir = buildingCreator.path.localPoints[i] - buildingCreator.path.localPoints[i - 1];
-            //buildingCreator.path.localNormals[i] = Vector3.Cross(dir, Vector3.right).normalized;
+            if(i == 0) dir = creator.path.localPoints[i] - creator.path.localPoints[i + 1];
+            else dir = creator.path.localPoints[i] - creator.path.localPoints[i - 1];
+            //creator.path.localNormals[i] = Vector3.Cross(dir, Vector3.right).normalized;
         }
-    }
-
-    public void TogglePathSnapped()
-    {
-        snapToGround = !snapToGround;
     }
 
     void StraightenPath()
@@ -226,16 +160,8 @@ public class PathManager : MonoBehaviour
         {
             if(selectedIndex == waypoints.Count - 1 && selectedIndex != 0) selectedIndex--;
 
-            if(straightenedSegments.Contains(selectedIndex))
-            {
-                //Debug.Log("removing segment " + selectedIndex);
-                straightenedSegments.Remove(selectedIndex);
-            }
-            else
-            {
-                //Debug.Log("adding segment " + selectedIndex);
-                straightenedSegments.Add(selectedIndex);
-            }
+            if(straightenedSegments.Contains(selectedIndex)) straightenedSegments.Remove(selectedIndex);
+            else straightenedSegments.Add(selectedIndex);
         }
 
         /*string paste = "";
@@ -243,12 +169,8 @@ public class PathManager : MonoBehaviour
         Debug.Log(paste);//*/
     }
 
-    public void StraightenSegment(int index)
+    public void StraightenSegment(PathCreator creator, int index)
     {
-        //int curIndex = waypoints.IndexOf(selectedWaypoint);
-        //if(index == waypoints.Count - 1) index--;
-
-        //Vector3[] segmentPoints = buildingCreator.path.GetPointsInSegment(controlIndex);
         if(index + 1 < waypoints.Count)
         {
             Vector3 curAnchor = waypoints[index].transform.position;
@@ -262,15 +184,9 @@ public class PathManager : MonoBehaviour
             // Make the control points point to the opposing anchor point 
             Vector3 curControlStraightened = (nextAnchor - curAnchor).normalized + curAnchor;
             Vector3 nextControlStraightened = (curAnchor - nextAnchor).normalized + nextAnchor;
-
-            //buildingCreator.bezierPath.controlMode = BezierPath.ControlMode.Free;
-            //Debug.Log(buildingCreator.bezierPath.controlMode);
             
-            buildingCreator.bezierPath.SetPoint(curControlIndex, curControlStraightened);
-            buildingCreator.bezierPath.SetPoint(nextControlIndex, nextControlStraightened);
-
-            //Instantiate(waypointPrefab, curControlStraightened, Quaternion.identity);
-            //Instantiate(waypointPrefab, nextControlStraightened, Quaternion.identity);
+            creator.bezierPath.SetPoint(curControlIndex, curControlStraightened);
+            creator.bezierPath.SetPoint(nextControlIndex, nextControlStraightened);
         }
     }
 
@@ -280,45 +196,43 @@ public class PathManager : MonoBehaviour
 
         while(inPathCreation)
         {
-            //Debug.Log(waypoints.Count);
             if(waypoints.Count >= 2)
             {
                 List<Vector3> anchorPoints = new List<Vector3>();
                 foreach(GameObject waypoint in waypoints) anchorPoints.Add(waypoint.transform.position);
                 buildingCreator.bezierPath = new BezierPath(anchorPoints);
 
+                // Set normals to up by default(changes with snapping)
+                for(int i = 0; i < buildingCreator.path.localNormals.Length; i++) buildingCreator.path.localNormals[i] = Vector3.up;
+
                 // Apply snapping and straigtening while toggled
-                if(snapToGround) SnapPath();
-                foreach(int segmentIndex in straightenedSegments) StraightenSegment(segmentIndex);
+                if(snapToGround) SnapPath(buildingCreator);
+                foreach(int segmentIndex in straightenedSegments) StraightenSegment(buildingCreator, segmentIndex);
 
-                int rendPoints = 0;
-                normalRend.positionCount = buildingCreator.path.localNormals.Length * 3;
-
-                for(int i = 0; i < buildingCreator.path.localNormals.Length; i++)
-                {
-                    /*buildingCreator.path.localPoints[i].y = Terrain.activeTerrain.SampleHeight(buildingCreator.path.localPoints[i]) + heightAboveTerrain;
-            
-                    Vector3 dir;
-                    if(i == 0) dir = buildingCreator.path.localPoints[i] - buildingCreator.path.localPoints[i + 1];
-                    else dir = buildingCreator.path.localPoints[i] - buildingCreator.path.localPoints[i - 1];
-                    //buildingCreator.path.localNormals[i] = Vector3.Cross(dir, Vector3.right).normalized;*/
-
-                    Vector3 curPoint = buildingCreator.path.localPoints[i];
-                    Vector3 curNorm = buildingCreator.path.localNormals[i];
-                    normalRend.SetPosition(rendPoints, curPoint);
-                    rendPoints++;
-                    normalRend.SetPosition(rendPoints, curPoint + curNorm);
-                    rendPoints++;
-                    normalRend.SetPosition(rendPoints, curPoint);
-                    rendPoints++;
-                }
+                DrawNormals();
 
                 buildingCreator.DrawPathEdit();
             }
 
-            
-
             yield return null; 
+        }
+    }
+
+    void DrawNormals()
+    {
+        int rendPoints = 0;
+        normalRend.positionCount = buildingCreator.path.localNormals.Length * 3;
+
+        for(int i = 0; i < buildingCreator.path.localNormals.Length; i++)
+        {
+            Vector3 curPoint = buildingCreator.path.localPoints[i];
+            Vector3 curNorm = buildingCreator.path.localNormals[i];
+            normalRend.SetPosition(rendPoints, curPoint);
+            rendPoints++;
+            normalRend.SetPosition(rendPoints, curPoint + curNorm);
+            rendPoints++;
+            normalRend.SetPosition(rendPoints, curPoint);
+            rendPoints++;
         }
     }
 
@@ -340,7 +254,6 @@ public class PathManager : MonoBehaviour
 
     public void updatePaths()
     {
-        //paths = GameObject.FindGameObjectsWithTag("Path");
         paths = Utility.GetChildren(GameObject.FindGameObjectWithTag("PathParent"));
         //foreach(GameObject path in paths) Debug.Log(path.name);
     }
@@ -390,6 +303,8 @@ public class PathManager : MonoBehaviour
         inPathEdit = false;
         inPathCreation = false;
         //Debug.Log("Exiting Path Edit...");
+
+        //CameraMovement.topdownMode = false;
     }
 
     public void clearEditNodes()
@@ -400,7 +315,23 @@ public class PathManager : MonoBehaviour
 
     public void SavePath()
     {
+        GameObject newPath = Instantiate(buildingPath);
+        newPath.name = pathNameInput.text;
 
+        GameObject parent = GameObject.FindGameObjectWithTag("PathParent");
+        newPath.transform.parent = parent.transform;
+
+        PathCreator newCreator = newPath.GetComponent<PathCreator>();
+        newCreator.ClearPath();
+
+        for(int i = 0; i < newCreator.path.localNormals.Length; i++) newCreator.path.localNormals[i] = Vector3.up;
+
+        // Apply snapping and straigtening while toggled
+        if(snapToGround) SnapPath(newCreator);
+        foreach(int segmentIndex in straightenedSegments) StraightenSegment(newCreator, segmentIndex);
+
+        newPath.tag = "Path";
+        updatePaths();
     }
 
     public void buildNewPath()

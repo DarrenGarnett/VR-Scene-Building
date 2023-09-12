@@ -66,12 +66,15 @@ namespace PathCreation {
                 lineRend.startWidth = 0.2f;
                 lineRend.endWidth = 0.2f;
                 lineRend.loop = false;
-                lineRend.positionCount = path.NumPoints;
+                
+                lineRend.positionCount = path.localPoints.Length;
+                for(int i = 0; i < path.localPoints.Length; i++) lineRend.SetPosition(i, path.localPoints[i]);
 
+                /*lineRend.positionCount = path.NumPoints;
                 for (int i = 0; i < path.NumPoints; i++)
                 {
                     lineRend.SetPosition(i, path.GetPoint(i));
-                }
+                }*/
             }
         }
 
@@ -97,12 +100,16 @@ namespace PathCreation {
                 lineRend.startWidth = 0.5f;
                 lineRend.endWidth = 0.5f;
                 lineRend.loop = false;
-                lineRend.positionCount = path.NumPoints;
+
+                lineRend.positionCount = path.localPoints.Length;
+                for(int i = 0; i < path.localPoints.Length; i++) lineRend.SetPosition(i, path.localPoints[i]);
+
+                /*lineRend.positionCount = path.NumPoints;
 
                 for (int i = 0; i < path.NumPoints; i++)
                 {
                     lineRend.SetPosition(i, path.GetPoint(i));
-                }
+                }*/
 
                 //draw ends
                 /*GameObject startPoint = GameObject.CreatePrimitive(PrimitiveType.Capsule);
