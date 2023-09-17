@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using TMPro;
 
 public class CameraMovement : MonoBehaviour
@@ -63,8 +64,8 @@ public class CameraMovement : MonoBehaviour
             }
             else
             {
-                // Handle click dragging
-                if((Input.GetMouseButton(0) || Input.GetMouseButtonDown(0)) && !disableDrag)
+                // Drag screen to rotate if not disabled or over a UI element
+                if((Input.GetMouseButton(0) || Input.GetMouseButtonDown(0)) && (!disableDrag && !EventSystem.current.IsPointerOverGameObject()))
                 {
                     this.transform.eulerAngles += panSpeed * new Vector3(-Input.GetAxis("Mouse Y"), Input.GetAxis("Mouse X"), 0);
                     curRotation = this.transform.eulerAngles;

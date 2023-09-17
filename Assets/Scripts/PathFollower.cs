@@ -39,9 +39,9 @@ namespace PathCreation.Examples
                 offsetRotation = transform.rotation;
 
                 speed = 1;
-                //Debug.Log(pathCreator.path.length);
-                //Debug.Log(cycleDuration);
-                //Debug.Log("Path creator not null and initialized");
+
+                // need to define up direction for later calculation to avoid undefined behavior
+                //transform.up = new Vector3(0, 1, 0);
             }
         }
 
@@ -83,10 +83,13 @@ namespace PathCreation.Examples
 
                 distanceTravelled += pathCreator.path.length * (GlobalTimeScript.deltaTime / cycleDuration);
                 Vector3 pathPosition = pathCreator.path.GetPointAtDistance(distanceTravelled, endOfPathInstruction);
-                Quaternion pathRotation = pathCreator.path.GetRotationAtDistance(distanceTravelled, endOfPathInstruction);
+                
+                //nextPathRotation = GetNextRotation();
 
                 transform.position = pathPosition + prevPathOffset;
-                transform.rotation = pathRotation * initRotation;
+                //transform.rotation = pathRotation * initRotation;
+                //transform.rotation = nextPathRotation;// * transform.rotation;
+                transform.rotation = GetNextRotation();
 
                 prevPathRotation = transform.rotation;
 
@@ -114,7 +117,53 @@ namespace PathCreation.Examples
             }
         }
 
+        Quaternion GetNextRotation()
+        {
+            Quaternion nextRotation = Quaternion.identity;
+            if(pathCreator.objectsFollowTerrain)
+            {
+                /*Vector3 terrainSize = Terrain.activeTerrain.terrainData.size;
+                float terrainX = pathPosition.x / terrainSize.x;
+                float terrainZ = pathPosition.z / terrainSize.z;
+
+                Vector3 normal = Terrain.activeTerrain.terrainData.GetInterpolatedNormal(terrainX, terrainZ);
+                Debug.Log((normal + transform.position) - transform.position);*/
+
+                RaycastHit hit;
+                if(Physics.Raycast(transform.position, Vector3.down, out hit, Mathf.Infinity))
+                {
+                    // difference between the obj up and normal(change in rotation on terrain)
+                    //Quaternion qterrain = Quaternion.FromToRotation(transform.up, hit.normal); 
+                    //nextRotation = Quaternion.Slerp(transform.rotation, qterrain * transform.rotation, 0.01f);
+                    
+                    // difference between world up and normal(overall change in rotation)
+                    Quaternion qterrain = Quaternion.FromToRotation(Vector3.up, hit.normal);
+                    //nextRotation = Quaternion.Slerp(transform.rotation, qterrain, 0.01f);
+                    Vector3 vTerrain = qterrain.eulerAngles;
+                    
+                    Quaternion getRot = pathCreator.path.GetRotationAtDistance(distanceTravelled, endOfPathInstruction);// * initRotation;
+                    //nextRotation = getRotation;
+                    Vector3 vGetRot = getRot.eulerAngles;
+
+                    Vector3 terrainPathedRot = vTerrain + initRotation.eulerAngles;
+                    //Debug.Log(vGetRot);
+                    terrainPathedRot.y += vGetRot.y;
+
+                    //nextRotation = getRotation * qterrain;
+                    //nextRotation = Quaternion.Slerp(transform.rotation, getRotation * qterrain, 0.01f);
+
+                    //nextRotation = Quaternion.Euler(terrainPathedRot);
+                    nextRotation = Quaternion.Slerp(transform.rotation, Quaternion.Euler(terrainPathedRot), 0.01f);
+                    //nextRotation = Quaternion.Slerp(transform.rotation, Quaternion.Euler(terrainNormal.x, getRotation.y, terrainNormal.z), 0.25f);
+                    
+                    //nextRotation = Quaternion.Euler(getRotation) * Quaternion.Euler(terrainNormal);
+                }
+                else Debug.Log("Ray miss on path follower");
+            }
+            else nextRotation = pathCreator.path.GetRotationAtDistance(distanceTravelled, endOfPathInstruction) * initRotation;
         
+            return nextRotation;
+        }
 
         // If the path changes during the game, update the distance travelled so that the follower's position on the new path
         // is as close as possible to its position on the old path

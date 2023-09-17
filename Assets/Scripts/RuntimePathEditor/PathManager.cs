@@ -103,9 +103,19 @@ public class PathManager : MonoBehaviour
             waypoint.transform.position = groundPos;
         }
 
-        for(int i = 0; i < creator.path.localNormals.Length; i++)
+        for(int i = 0; i < creator.path.localPoints.Length; i++)
         {
             creator.path.localPoints[i].y = Terrain.activeTerrain.SampleHeight(creator.path.localPoints[i]) + heightAboveTerrain;
+
+            /*
+            // may collide with objects above terrain?
+            RaycastHit hit;
+            if(Physics.Raycast(creator.path.localPoints[i], Vector3.down, out hit, Mathf.Infinity))
+            {
+                creator.path.localPoints[i].y = hit.point.y + heightAboveTerrain;
+            }
+            else Debug.Log("Path snap ray missed.");
+            */
         
             Vector3 dir;
             if(i == 0) dir = creator.path.localPoints[i] - creator.path.localPoints[i + 1];
@@ -203,7 +213,7 @@ public class PathManager : MonoBehaviour
                 buildingCreator.bezierPath = new BezierPath(anchorPoints);
 
                 // Set normals to up by default(changes with snapping)
-                for(int i = 0; i < buildingCreator.path.localNormals.Length; i++) buildingCreator.path.localNormals[i] = Vector3.up;
+                //for(int i = 0; i < buildingCreator.path.localNormals.Length; i++) buildingCreator.path.localNormals[i] = Vector3.up;
 
                 // Apply snapping and straigtening while toggled
                 if(snapToGround) SnapPath(buildingCreator);
@@ -327,7 +337,12 @@ public class PathManager : MonoBehaviour
         for(int i = 0; i < newCreator.path.localNormals.Length; i++) newCreator.path.localNormals[i] = Vector3.up;
 
         // Apply snapping and straigtening while toggled
-        if(snapToGround) SnapPath(newCreator);
+        if(snapToGround) 
+        {
+            SnapPath(newCreator);
+            newCreator.objectsFollowTerrain = true;
+        }
+
         foreach(int segmentIndex in straightenedSegments) StraightenSegment(newCreator, segmentIndex);
 
         newPath.tag = "Path";

@@ -16,6 +16,7 @@ namespace PathCreation {
         bool initialized;
         Vector3 prevPosition;
         private bool visible;
+        public bool objectsFollowTerrain = false;
 
         GlobalDisplaySettings globalEditorDisplaySettings;
 
