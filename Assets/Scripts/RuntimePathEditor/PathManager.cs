@@ -7,10 +7,9 @@ using PathCreation;
 
 public class PathManager : MonoBehaviour
 {
-    
+    bool inPathEdit = false;
     public bool inPathCreation = false;
-    public bool inPathEdit = false;
-    
+
     public GameObject waypointPrefab;
     public static List<GameObject> paths = new List<GameObject>();
     public List<GameObject> waypoints = new List<GameObject>();
@@ -18,14 +17,14 @@ public class PathManager : MonoBehaviour
     private int numSpawned;
 
     private GameObject curPath;
-    private GameObject buildingPath;
-    private PathCreator buildingCreator;
+    private GameObject pathInCreation;
     public float heightAboveTerrain = 0.25f;
     private LineRenderer normalRend;
 
     public TMP_Dropdown pathDropdown;
     public TMP_InputField pathNameInput;
     public GameObject removeButton;
+    public GameObject saveButton;
     public ToggleButton straightenButton;
 
     private GameObject selectedWaypoint;
@@ -38,18 +37,7 @@ public class PathManager : MonoBehaviour
     
     void Start()
     {
-        updatePaths();
-        updateDropdown();
-        //setCurPath();
-
-        buildingPath = new GameObject("BuildingPath");
-
-        //GameObject parent = GameObject.FindGameObjectWithTag("PathParent");
-        //buildingPath.transform.parent = parent.transform;
-        buildingCreator = buildingPath.AddComponent<PathCreator>();
-        buildingCreator.bezierPath.DeleteSegment(0);
-        buildingCreator.bezierPath.DeleteSegment(1);
-        buildingCreator.bezierPath.GlobalNormalsAngle = 90;
+        UpdateDropdown();
 
         normalRend = gameObject.GetComponent<LineRenderer>();
         normalRend.startWidth = 0.05f;
@@ -61,34 +49,206 @@ public class PathManager : MonoBehaviour
         terrainCollider = Terrain.activeTerrain.GetComponent<TerrainCollider>();
     }
 
-    void Update()
+    IEnumerator MonitorNameInput()
     {
-        // Block camera movement while in the path name text box
-        if(pathNameInput.isFocused)
+        while(inPathCreation)
         {
-            //Debug.Log("In path name input.");
-            editingPathName = true;
-            CameraMovement.lockMovement = true;
-        }
+            // Block camera movement while in the path name text box
+            if(pathNameInput.isFocused)
+            {
+                editingPathName = true;
+                CameraMovement.lockMovement = true;
+            }
 
-        // Allow camera movement once out of the path name text box
-        if(editingPathName != pathNameInput.isFocused)
-        {
-            //Debug.Log("No longer editing path name.");
-            editingPathName = false;
-            CameraMovement.lockMovement = false;
-        }
+            // Allow camera movement once out of the path name text box
+            if(editingPathName != pathNameInput.isFocused)
+            {
+                editingPathName = false;
+                CameraMovement.lockMovement = false;
+            }
 
-        // Manage straighten button display
-        if(inPathCreation && waypoints.Count > 0)
-        {
-            int curIndex = GetWaypointIndex(selectedWaypoint);
-            if(curIndex == waypoints.Count - 1 && curIndex != 0) curIndex--;
-
-            if(straightenedSegments.Contains(curIndex)) straightenButton.SetOn();
-            else straightenButton.SetOff();
+            yield return null;
         }
     }
+
+    IEnumerator DisplayCurPath()
+    {
+        // wait one frame for setup
+        yield return null;
+
+        while(inPathEdit)
+        {
+            // Manage straighten button display
+            if(waypoints.Count > 0)
+            {
+                int curIndex = GetWaypointIndex(selectedWaypoint);
+                if(curIndex == waypoints.Count - 1 && curIndex != 0) curIndex--;
+
+                if(straightenedSegments.Contains(curIndex)) straightenButton.SetOn();
+                else straightenButton.SetOff();
+            }
+
+            // Display or hide the current path
+            if(curPath)
+            {
+                PathCreator curCreator = curPath.GetComponent<PathCreator>();
+                if(waypoints.Count >= 2)
+                {
+                    //Debug.Log("Displaying path...");
+                    List<Vector3> anchorPoints = new List<Vector3>();
+                    foreach(GameObject waypoint in waypoints) anchorPoints.Add(waypoint.transform.position);
+                    curCreator.bezierPath = new BezierPath(anchorPoints);
+
+                    // Set normals to up by default(changes with snapping)
+                    //for(int i = 0; i < buildingCreator.path.localNormals.Length; i++) buildingCreator.path.localNormals[i] = Vector3.up;
+
+                    // Apply snapping and straigtening while toggled
+                    if(snapToGround) SnapPath(curCreator);
+                    foreach(int segmentIndex in straightenedSegments) StraightenSegment(curCreator, segmentIndex);
+
+                    //DrawNormals();
+
+                    curCreator.DrawPathEdit();
+                }
+                else
+                {
+                    //Debug.Log("Hiding path...");
+                    curCreator.ClearPath();
+                }
+            }
+
+            yield return null;
+        }
+    }
+
+    public void StartEdit()
+    {
+        inPathEdit = true;
+
+        UpdateDropdown();
+        UpdateCurPath();
+
+        StartCoroutine(DisplayCurPath());
+    }
+
+    public void StopEdit()
+    {
+        inPathEdit = false;
+        inPathCreation = false;
+
+        if(pathInCreation) Destroy(pathInCreation);
+
+        HideCurPath();
+    }
+
+    public void UpdateDropdown()
+    {
+        pathDropdown.options.Clear();
+
+        paths = Utility.GetChildren(GameObject.FindGameObjectWithTag("PathParent"));
+        foreach(GameObject path in paths)
+        {
+            pathDropdown.options.Add(new TMP_Dropdown.OptionData() {text = path.name});
+        }
+    }
+
+    public void UpdateCurPath()
+    {
+        HideCurPath();
+
+        curPath = paths[pathDropdown.value];
+
+        BezierPath path = curPath.GetComponent<PathCreator>().bezierPath;
+
+        for(int i = 0; i < path.NumPoints; i += 3)
+        {
+            GameObject newWaypoint = Instantiate(waypointPrefab);
+            newWaypoint.transform.position = path.GetPoint(i);
+            waypoints.Add(newWaypoint);
+        }
+    }
+
+    void SetCurPath(GameObject newCurPath)
+    {
+        HideCurPath();
+
+        curPath = newCurPath;
+
+        BezierPath path = curPath.GetComponent<PathCreator>().bezierPath;
+
+        for(int i = 0; i < path.NumPoints; i += 3)
+        {
+            GameObject newWaypoint = Instantiate(waypointPrefab);
+            newWaypoint.transform.position = path.GetPoint(i);
+            waypoints.Add(newWaypoint);
+        }
+    }
+
+    void HideCurPath()
+    {
+        if(curPath) 
+        {
+            curPath.GetComponent<PathCreator>().ClearPath();
+            ClearWaypoints();
+        }
+    }
+
+    public void CreateNewPath()
+    {   
+        inPathCreation = true;
+
+        pathNameInput.text = "Path" + paths.Count;
+
+        GameObject buildingPath = new GameObject("BuildingPath");
+        PathCreator buildingCreator = buildingPath.AddComponent<PathCreator>();
+        buildingCreator.bezierPath.DeleteSegment(0);
+        buildingCreator.bezierPath.DeleteSegment(1);
+        
+        SetCurPath(buildingPath);
+        pathInCreation = buildingPath;
+
+        StartCoroutine(MonitorNameInput());
+    }
+
+    public void CancelNewPath()
+    {
+        Destroy(curPath);
+
+        UpdateCurPath();
+
+        inPathCreation = false;
+    }
+
+    public void SavePath()
+    {
+        GameObject newPath = Instantiate(curPath);
+        newPath.name = pathNameInput.text;
+
+        GameObject parent = GameObject.FindGameObjectWithTag("PathParent");
+        newPath.transform.parent = parent.transform;
+
+        PathCreator newCreator = newPath.GetComponent<PathCreator>();
+        //newCreator.ClearPath();
+
+        //for(int i = 0; i < newCreator.path.localNormals.Length; i++) newCreator.path.localNormals[i] = Vector3.up;
+
+        // Apply snapping and straigtening while toggled
+        if(snapToGround) 
+        {
+            SnapPath(newCreator);
+            newCreator.objectsFollowTerrain = true;
+        }
+
+        foreach(int segmentIndex in straightenedSegments) StraightenSegment(newCreator, segmentIndex);
+
+        newPath.tag = "Path";
+        UpdateDropdown();
+
+        pathDropdown.value = paths.Count - 1;
+
+        inPathCreation = false;
+    }
+
 
     public void TogglePathSnapped()
     {
@@ -121,43 +281,6 @@ public class PathManager : MonoBehaviour
             if(i == 0) dir = creator.path.localPoints[i] - creator.path.localPoints[i + 1];
             else dir = creator.path.localPoints[i] - creator.path.localPoints[i - 1];
             //creator.path.localNormals[i] = Vector3.Cross(dir, Vector3.right).normalized;
-        }
-    }
-
-    void StraightenPath()
-    {
-        // Reference: bronxbomber92, Nov 11 2006
-        // https://forum.unity.com/threads/math-problem.8114/#post-59715
-        Vector3 vA = waypoints[0].transform.position;
-        Vector3 vB = waypoints[waypoints.Count - 1].transform.position;
-
-        Vector3 lineVec = vB - vA;
-        
-        Vector3 v2 = (vB - vA).normalized;
-
-        Vector3 linePos;
-
-        //could also use GetClosestPointOnPath() from VetexPath?
-        foreach(GameObject waypoint in waypoints)
-        {
-            Vector3 v1 = waypoint.transform.position - vA;
-            float dist = Vector3.Distance(vA, vB);
-            float dot = Vector3.Dot(v2, v1);
-
-            if(dot <= 0) linePos = vA;
-            else if(dot >= dist) linePos = vB;
-            else
-            {
-                Vector3 v3 = v2 * dot;
-                linePos = vA + v3;
-            }
-
-            waypoint.transform.position = linePos;
-        }
-
-        for(int i = 0; i < buildingCreator.path.localPoints.Length; i++)
-        {
-            buildingCreator.path.localPoints[i] = lineVec * (i / buildingCreator.path.localPoints.Length);
         }
     }
 
@@ -199,38 +322,11 @@ public class PathManager : MonoBehaviour
             creator.bezierPath.SetPoint(nextControlIndex, nextControlStraightened);
         }
     }
-
-    IEnumerator DrawBuiltPath()
-    {
-        //Debug.Log("Constructed path display on.");
-
-        while(inPathCreation)
-        {
-            if(waypoints.Count >= 2)
-            {
-                List<Vector3> anchorPoints = new List<Vector3>();
-                foreach(GameObject waypoint in waypoints) anchorPoints.Add(waypoint.transform.position);
-                buildingCreator.bezierPath = new BezierPath(anchorPoints);
-
-                // Set normals to up by default(changes with snapping)
-                //for(int i = 0; i < buildingCreator.path.localNormals.Length; i++) buildingCreator.path.localNormals[i] = Vector3.up;
-
-                // Apply snapping and straigtening while toggled
-                if(snapToGround) SnapPath(buildingCreator);
-                foreach(int segmentIndex in straightenedSegments) StraightenSegment(buildingCreator, segmentIndex);
-
-                DrawNormals();
-
-                buildingCreator.DrawPathEdit();
-            }
-
-            yield return null; 
-        }
-    }
-
+    /*
     void DrawNormals()
     {
         int rendPoints = 0;
+        
         normalRend.positionCount = buildingCreator.path.localNormals.Length * 3;
 
         for(int i = 0; i < buildingCreator.path.localNormals.Length; i++)
@@ -245,177 +341,7 @@ public class PathManager : MonoBehaviour
             rendPoints++;
         }
     }
-
-    void HideBuiltPath()
-    {
-        normalRend.positionCount = 0;
-        buildingCreator.ClearPath();
-    }
-
-    public void updateDropdown()
-    {
-        pathDropdown.options.Clear();
-        //Debug.Log("Dropdown updated.");
-        foreach(GameObject path in paths)
-        {
-            pathDropdown.options.Add(new TMP_Dropdown.OptionData() {text = path.name});
-        }
-    }
-
-    public void updatePaths()
-    {
-        paths = Utility.GetChildren(GameObject.FindGameObjectWithTag("PathParent"));
-        //foreach(GameObject path in paths) Debug.Log(path.name);
-    }
-
-    public void setCurPath()
-    {
-        if(curPath) curPath.GetComponent<PathCreator>().ClearPath();
-        //clearEditNodes();
-
-        curPath = curPath = paths[pathDropdown.value];
-        //Debug.Log("Cur path: " + curPath);
-
-        //curPath.GetComponent<PathCreator>().DrawPath();
-        curPath.GetComponent<PathCreator>().DrawPathEdit();
-    }
-
-    public void editMode()
-    {
-        updateDropdown();
-        setCurPath();
-        normalRend.positionCount = 0;
-        buildingCreator.ClearPath();
-        ClearWaypoints();
-
-        inPathEdit = true;
-        inPathCreation = false;
-        //Debug.Log("Editing Path...");
-    }
-
-    public void createMode()
-    {
-        curPath.GetComponent<PathCreator>().ClearPath();
-        //clearEditNodes();
-
-        pathNameInput.text = "Path" + paths.Count;
-
-        inPathEdit = false;
-        inPathCreation = true;
-        //Debug.Log("Creating Path...");
-    }
-
-    public void exitMode()
-    {
-        curPath.GetComponent<PathCreator>().ClearPath();
-        //clearEditNodes();
-
-        inPathEdit = false;
-        inPathCreation = false;
-        //Debug.Log("Exiting Path Edit...");
-
-        //CameraMovement.topdownMode = false;
-    }
-
-    public void clearEditNodes()
-    {
-        GameObject[] nodes = GameObject.FindGameObjectsWithTag("PathEdit");
-        foreach(GameObject node in nodes) Destroy(node);
-    }
-
-    public void SavePath()
-    {
-        GameObject newPath = Instantiate(buildingPath);
-        newPath.name = pathNameInput.text;
-
-        GameObject parent = GameObject.FindGameObjectWithTag("PathParent");
-        newPath.transform.parent = parent.transform;
-
-        PathCreator newCreator = newPath.GetComponent<PathCreator>();
-        newCreator.ClearPath();
-
-        for(int i = 0; i < newCreator.path.localNormals.Length; i++) newCreator.path.localNormals[i] = Vector3.up;
-
-        // Apply snapping and straigtening while toggled
-        if(snapToGround) 
-        {
-            SnapPath(newCreator);
-            newCreator.objectsFollowTerrain = true;
-        }
-
-        foreach(int segmentIndex in straightenedSegments) StraightenSegment(newCreator, segmentIndex);
-
-        newPath.tag = "Path";
-        updatePaths();
-    }
-
-    public void buildNewPath()
-    {
-        //GameObject[] waypoints = GameObject.FindGameObjectsWithTag("Waypoint");
-        
-        GameObject newPath = new GameObject(pathNameInput.text);
-
-        GameObject parent = GameObject.FindGameObjectWithTag("PathParent");
-        newPath.transform.parent = parent.transform;
-
-        newPath.tag = "Path";
-        updatePaths();
-
-        PathCreator creator = newPath.AddComponent<PathCreator>();
-
-        List<Vector3> anchorPoints = new List<Vector3>();
-        foreach(GameObject waypoint in waypoints) anchorPoints.Add(waypoint.transform.position);
-        creator.bezierPath = new BezierPath(anchorPoints);
-        creator.bezierPath.GlobalNormalsAngle = 90;
-        creator.enabled = true;
-
-        for(int i = 0; i < creator.path.localPoints.Length; i++) 
-        {
-            /*RaycastHit hit;
-            if(Physics.Raycast(creator.path.localPoints[i], Vector3.down, out hit, Mathf.Infinity))
-            {
-                //Debug.Log("Ray hit below");
-                creator.path.localPoints[i] = hit.point + new Vector3(0, heightAboveTerrain, 0);
-            }
-            else if(Physics.Raycast(creator.path.localPoints[i], Vector3.up, out hit, Mathf.Infinity))
-            {
-                Debug.Log("Ray hit above");
-                creator.path.localPoints[i] = hit.point + new Vector3(0, heightAboveTerrain, 0);
-            }
-            else 
-            {
-                Debug.LogError("Path Leveling Ray Missed. ");
-            }*/
-
-            creator.path.localPoints[i].y = Terrain.activeTerrain.SampleHeight(creator.path.localPoints[i]) + heightAboveTerrain;
-            //Debug.Log(Terrain.activeTerrain.terrainData.GetInterpolatedNormal(Vector3.Normalize(creator.path.localPoints[i]).x, Vector3.Normalize(creator.path.localPoints[i]).z));
-            //creator.path.localNormals[i] = Terrain.activeTerrain.terrainData.GetInterpolatedNormal(creator.path.localPoints[i].x, creator.path.localPoints[i].z);
-            //Vector3 v1, v2;
-            //Vector3 right = new Vector3(creator.path.localPoints[i].x, Terrain.activeTerrain.SampleHeight(creator.path.localPoints[i] + new Vector3(0.1, 0, 0), creator.path.localPoints[i].z));
-            //v1 = 
-            Vector3 dir;
-            if(i == 0) dir = creator.path.localPoints[i] - creator.path.localPoints[i + 1];
-            else dir = creator.path.localPoints[i] - creator.path.localPoints[i - 1];
-            Vector3 right = Vector3.Cross(dir, Vector3.up);
-            Vector3 dir2 = right + creator.path.localPoints[i];
-            float temp = Terrain.activeTerrain.SampleHeight(dir2);
-            right.y = temp;
-            //Vector3 dir2 = creator.path.localPoints[i] - new Vector3(right.x, Terrain.activeTerrain.SampleHeight(creator.path.localPoints[i] + right), right.z);
-            //creator.path.localNormals[i] = Vector3.Cross(dir, Vector3.right).normalized;
-            //creator.path.localNormals[i] = Vector3.Cross(dir, right).normalized;
-
-            //Debug.Log(creator.path.localPoints[i]);
-        }
-
-        /*for(int i = 0; i < creator.bezierPath.NumPoints; i++)
-        {
-            Debug.Log(Terrain.activeTerrain.SampleHeight(creator.bezierPath.GetPoint(i)));
-            Vector3 curPoint = creator.bezierPath.GetPoint(i);
-            creator.bezierPath.SetPoint(i, new Vector3(curPoint.x, Terrain.activeTerrain.SampleHeight(curPoint) + heightAboveTerrain, curPoint.z));
-        }*/
-
-        ClearWaypoints();
-    }
+    */
 
     /*
     // Waypoint Functions
@@ -453,7 +379,7 @@ public class PathManager : MonoBehaviour
 
         if(CameraMovement.topdownMode) StartCoroutine(TrackMousePosition(newWaypoint));
 
-        if(waypoints.Count == 2) StartCoroutine(DrawBuiltPath());
+        //if(waypoints.Count == 2) StartCoroutine(DrawBuiltPath(buildingCreator));
     }
 
     IEnumerator TrackMousePosition(GameObject obj)
@@ -508,12 +434,12 @@ public class PathManager : MonoBehaviour
 
         Destroy(selectedWaypoint);
 
-        if(waypoints.Count < 2) 
+        /*if(waypoints.Count < 2) 
         {
             //Debug.Log("Stopping path draw");
-            StopCoroutine(DrawBuiltPath());
+            StopCoroutine(DrawBuiltPath(buildingCreator));
             HideBuiltPath();
-        }
+        }*/
     }
 
     public int GetWaypointIndex(GameObject waypoint)

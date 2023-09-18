@@ -613,7 +613,7 @@ public class SceneManip : MonoBehaviour
             GameObject parent = GameObject.FindGameObjectWithTag("PathParent");
             pathObject.transform.parent = parent.transform;
 
-            pathManager.updatePaths();
+            //pathManager.UpdatePaths();
 
             pathObject.AddComponent<PathCreator>();
             PathCreator pathCreator = pathObject.GetComponent<PathCreator>() as PathCreator;

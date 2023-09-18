@@ -132,10 +132,13 @@ namespace PathCreation.Examples
                 RaycastHit hit;
                 if(Physics.Raycast(transform.position, Vector3.down, out hit, Mathf.Infinity))
                 {
+                    // Reference: runevision, May 9 2009
+                    // https://forum.unity.com/threads/quaternion-rotation-along-normal.22727/
+
                     // difference between the obj up and normal(change in rotation on terrain)
                     //Quaternion qterrain = Quaternion.FromToRotation(transform.up, hit.normal); 
                     //nextRotation = Quaternion.Slerp(transform.rotation, qterrain * transform.rotation, 0.01f);
-                    
+                
                     // difference between world up and normal(overall change in rotation)
                     Quaternion qterrain = Quaternion.FromToRotation(Vector3.up, hit.normal);
                     //nextRotation = Quaternion.Slerp(transform.rotation, qterrain, 0.01f);
