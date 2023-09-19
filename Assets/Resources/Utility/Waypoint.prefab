@@ -595,7 +595,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   selected: 0
-  waypointDistanceScaleFactor: 0.1
+  waypointDistanceScaleFactor: 0.15
 --- !u!1 &5991318511872012875
 GameObject:
   m_ObjectHideFlags: 0

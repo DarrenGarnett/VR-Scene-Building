@@ -11,8 +11,10 @@ public class PathManager : MonoBehaviour
     public bool inPathCreation = false;
 
     public GameObject waypointPrefab;
+    public GameObject controlPointPrefab;
     public static List<GameObject> paths = new List<GameObject>();
     public List<GameObject> waypoints = new List<GameObject>();
+    List<GameObject> controlPoints = new List<GameObject>();
     private Vector3 waypointSpawn;
     private int numSpawned;
 
@@ -88,6 +90,10 @@ public class PathManager : MonoBehaviour
                 else straightenButton.SetOff();
             }
 
+            // Manage remove button visibility
+            if(selectedWaypoint && !selectedWaypoint.name.Contains("Control")) removeButton.SetActive(true);
+            else removeButton.SetActive(false);
+
             // Display or hide the current path
             if(curPath)
             {
@@ -102,9 +108,20 @@ public class PathManager : MonoBehaviour
                     // Set normals to up by default(changes with snapping)
                     //for(int i = 0; i < buildingCreator.path.localNormals.Length; i++) buildingCreator.path.localNormals[i] = Vector3.up;
 
+                    int controlIndex = 0;
+                    for(int pointIndex = 0; pointIndex < curCreator.bezierPath.NumPoints - 2; pointIndex += 3)
+                    {
+                        curCreator.bezierPath.SetPoint(pointIndex + 1, controlPoints[controlIndex].transform.position);
+                        curCreator.bezierPath.SetPoint(pointIndex + 2, controlPoints[controlIndex + 1].transform.position);
+                        controlIndex += 2;
+                    }
+                
                     // Apply snapping and straigtening while toggled
                     if(snapToGround) SnapPath(curCreator);
-                    foreach(int segmentIndex in straightenedSegments) StraightenSegment(curCreator, segmentIndex);
+                    foreach(int segmentIndex in straightenedSegments) 
+                    {
+                        StraightenSegment(curCreator, segmentIndex);
+                    }
 
                     //DrawNormals();
 
@@ -156,15 +173,29 @@ public class PathManager : MonoBehaviour
     {
         HideCurPath();
 
+        straightenedSegments.Clear();
+
         curPath = paths[pathDropdown.value];
 
         BezierPath path = curPath.GetComponent<PathCreator>().bezierPath;
 
-        for(int i = 0; i < path.NumPoints; i += 3)
+        // instantiate the current anchor and control points
+        for(int i = 0; i < path.NumPoints; i++)
         {
-            GameObject newWaypoint = Instantiate(waypointPrefab);
-            newWaypoint.transform.position = path.GetPoint(i);
-            waypoints.Add(newWaypoint);
+            int segmentIndex = i % 3;
+
+            if(segmentIndex == 0)
+            {
+                GameObject newWaypoint = Instantiate(waypointPrefab);
+                newWaypoint.transform.position = path.GetPoint(i);
+                waypoints.Add(newWaypoint);
+            }
+            else
+            {
+                GameObject controlPoint = Instantiate(controlPointPrefab);
+                controlPoint.transform.position = path.GetPoint(i);
+                controlPoints.Add(controlPoint);
+            }
         }
     }
 
@@ -172,15 +203,29 @@ public class PathManager : MonoBehaviour
     {
         HideCurPath();
 
+        straightenedSegments.Clear();
+
         curPath = newCurPath;
 
         BezierPath path = curPath.GetComponent<PathCreator>().bezierPath;
 
-        for(int i = 0; i < path.NumPoints; i += 3)
+        // instantiate the current anchor and control points
+        for(int i = 0; i < path.NumPoints; i++)
         {
-            GameObject newWaypoint = Instantiate(waypointPrefab);
-            newWaypoint.transform.position = path.GetPoint(i);
-            waypoints.Add(newWaypoint);
+            int segmentIndex = i % 3;
+
+            if(segmentIndex == 0)
+            {
+                GameObject newWaypoint = Instantiate(waypointPrefab);
+                newWaypoint.transform.position = path.GetPoint(i);
+                waypoints.Add(newWaypoint);
+            }
+            else
+            {
+                GameObject controlPoint = Instantiate(controlPointPrefab);
+                controlPoint.transform.position = path.GetPoint(i);
+                controlPoints.Add(controlPoint);
+            }
         }
     }
 
@@ -190,6 +235,7 @@ public class PathManager : MonoBehaviour
         {
             curPath.GetComponent<PathCreator>().ClearPath();
             ClearWaypoints();
+            ClearControlPoints();
         }
     }
 
@@ -253,6 +299,22 @@ public class PathManager : MonoBehaviour
     public void TogglePathSnapped()
     {
         snapToGround = !snapToGround;
+
+        if(snapToGround)
+        {
+            foreach(GameObject control in controlPoints) control.SetActive(false);
+        }
+        else
+        {
+            for(int i = 0; i < controlPoints.Count; i += 2)
+            {
+                if(!straightenedSegments.Contains(i / 2)) 
+                {
+                    controlPoints[i].SetActive(true);
+                    controlPoints[i + 1].SetActive(true);
+                }
+            }
+        }
     }
 
     void SnapPath(PathCreator creator)
@@ -293,8 +355,21 @@ public class PathManager : MonoBehaviour
         {
             if(selectedIndex == waypoints.Count - 1 && selectedIndex != 0) selectedIndex--;
 
-            if(straightenedSegments.Contains(selectedIndex)) straightenedSegments.Remove(selectedIndex);
-            else straightenedSegments.Add(selectedIndex);
+            if(straightenedSegments.Contains(selectedIndex)) 
+            {
+                straightenedSegments.Remove(selectedIndex);
+                if(!snapToGround)
+                {
+                    controlPoints[selectedIndex * 2].SetActive(true);
+                    controlPoints[(selectedIndex * 2) + 1].SetActive(true);
+                }
+            }
+            else 
+            {
+                straightenedSegments.Add(selectedIndex);
+                controlPoints[selectedIndex * 2].SetActive(false);
+                controlPoints[(selectedIndex * 2) + 1].SetActive(false);
+            }
         }
 
         /*string paste = "";
@@ -356,6 +431,16 @@ public class PathManager : MonoBehaviour
         waypoints.Clear();
     }
 
+    void ClearControlPoints()
+    {
+        foreach(GameObject control in controlPoints)
+        {
+            Destroy(control);
+        }
+
+        controlPoints.Clear();
+    }
+
     public void AddWaypoint()
     {
         // Instantiate a new waypoint at the adjusted position
@@ -378,6 +463,19 @@ public class PathManager : MonoBehaviour
         SelectWaypoint(newWaypoint);
 
         if(CameraMovement.topdownMode) StartCoroutine(TrackMousePosition(newWaypoint));
+
+        // make temporary path to initialize new control points
+        List<Vector3> curAnchorPoints = new List<Vector3>();
+        foreach(GameObject waypoint in waypoints) curAnchorPoints.Add(waypoint.transform.position);
+        BezierPath tempPath = new BezierPath(curAnchorPoints);
+
+        GameObject controlPoint = Instantiate(controlPointPrefab);
+        controlPoint.transform.position = tempPath.GetPoint(tempPath.NumPoints - 2);
+        controlPoints.Add(controlPoint);
+
+        controlPoint = Instantiate(controlPointPrefab);
+        controlPoint.transform.position = tempPath.GetPoint(tempPath.NumPoints - 3);
+        controlPoints.Add(controlPoint);
 
         //if(waypoints.Count == 2) StartCoroutine(DrawBuiltPath(buildingCreator));
     }
@@ -411,39 +509,69 @@ public class PathManager : MonoBehaviour
         selectedWaypoint = newSelectedWaypoint;
 
         // Show remove button for selected waypoint
-        removeButton.SetActive(true);
+        //removeButton.SetActive(true);
     }
 
     public void DeleteWaypoint()
     {
-        // Hide remove button since unselecting
-        removeButton.SetActive(false);
-
-        // Update waypoint labels
-        for(int i = GetWaypointIndex(selectedWaypoint); i < waypoints.Count; i++)
+        if(selectedWaypoint.name != "ControlPoint(Clone)")
         {
-            waypoints[i].GetComponent<WaypointUtil>().SetLabel();
+            // Hide remove button since unselecting
+            //removeButton.SetActive(false);
+
+            // Update waypoint and control labels
+            for(int i = GetWaypointIndex(selectedWaypoint); i < waypoints.Count; i++)
+            {
+                waypoints[i].GetComponent<WaypointUtil>().SetLabel();
+            }
+
+            int curControlIndex = GetWaypointIndex(selectedWaypoint) * 2;
+            if(curControlIndex == controlPoints.Count - 1) curControlIndex -= 2;
+            for(int i = curControlIndex; i < controlPoints.Count; i++)
+            {
+                controlPoints[i].GetComponent<WaypointUtil>().SetLabel();
+            }
+
+            // Remove from straightened segments list if applicable
+            int indexSelected = GetWaypointIndex(selectedWaypoint);
+            if(straightenedSegments.Contains(indexSelected - 1)) straightenedSegments.Remove(indexSelected - 1);
+            if(straightenedSegments.Contains(indexSelected)) straightenedSegments.Remove(indexSelected);
+
+            /*Debug.Log("Anchors: 0-" + (waypoints.Count - 1));
+            Debug.Log("Controls: 0-" + (controlPoints.Count - 1));
+            Debug.Log("anchor " + indexSelected + " selected.");
+            Debug.Log("controls " + (indexSelected * 2) + " and " + ((indexSelected * 2) + 1) + " selected");*/
+
+            if(indexSelected == waypoints.Count - 1) indexSelected--;
+            GameObject firstControl = controlPoints[indexSelected * 2];
+            GameObject secondControl = controlPoints[(indexSelected * 2) + 1];
+
+            controlPoints.Remove(firstControl);
+            controlPoints.Remove(secondControl);
+
+            Destroy(firstControl);
+            Destroy(secondControl);
+
+            waypoints.Remove(selectedWaypoint);
+
+            Destroy(selectedWaypoint);
+
+            /*if(waypoints.Count < 2) 
+            {
+                //Debug.Log("Stopping path draw");
+                StopCoroutine(DrawBuiltPath(buildingCreator));
+                HideBuiltPath();
+            }*/
         }
-
-        // Remove from straightened segments list if applicable
-        int indexSelected = GetWaypointIndex(selectedWaypoint);
-        if(straightenedSegments.Contains(indexSelected - 1)) straightenedSegments.Remove(indexSelected - 1);
-        if(straightenedSegments.Contains(indexSelected)) straightenedSegments.Remove(indexSelected);
-
-        waypoints.Remove(selectedWaypoint);
-
-        Destroy(selectedWaypoint);
-
-        /*if(waypoints.Count < 2) 
-        {
-            //Debug.Log("Stopping path draw");
-            StopCoroutine(DrawBuiltPath(buildingCreator));
-            HideBuiltPath();
-        }*/
     }
 
     public int GetWaypointIndex(GameObject waypoint)
     {
         return waypoints.IndexOf(waypoint);
+    }
+
+    public int GetControlIndex(GameObject control)
+    {
+        return controlPoints.IndexOf(control);
     }
 }

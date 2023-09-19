@@ -12,7 +12,7 @@ public class WaypointUtil : MonoBehaviour
     TMP_Text label;
     public bool selected = false;
     
-    public float waypointDistanceScaleFactor = 0.1f;
+    public float waypointDistanceScaleFactor;
     private Vector3 initScale;
 
     void Awake()
@@ -34,12 +34,24 @@ public class WaypointUtil : MonoBehaviour
 
     void Start()
     {
-        label.text = (pathManager.GetWaypointIndex(gameObject) + 1).ToString();
+        if(gameObject.name.Contains("Control"))
+        {
+            int controlIndex = pathManager.GetControlIndex(gameObject);
+            if(controlIndex % 2 == 0) label.text = ((controlIndex / 2) + 1).ToString() + "-" + ((controlIndex / 2) + 2).ToString();
+            else label.text = ((controlIndex / 2) + 2).ToString() + "-" + ((controlIndex / 2) + 1).ToString();
+        }
+        else label.text = (pathManager.GetWaypointIndex(gameObject) + 1).ToString();
     }
 
     public void SetLabel()
     {
-        label.text = (pathManager.GetWaypointIndex(gameObject)).ToString();
+        if(gameObject.name.Contains("Control"))
+        {
+            int controlIndex = pathManager.GetControlIndex(gameObject);
+            if(controlIndex % 2 == 0) label.text = (controlIndex / 2).ToString() + "-" + ((controlIndex / 2) + 1).ToString();
+            else label.text = ((controlIndex / 2) + 1).ToString() + "-" + (controlIndex / 2).ToString();
+        }
+        else label.text = (pathManager.GetWaypointIndex(gameObject)).ToString();
     }
 
     void FixedUpdate()
