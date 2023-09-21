@@ -2,6 +2,6 @@ INCLUDE demo.txt
 CREATE Dumptruck1 DumpTruck
 
 //CALL demo
-MOVE Dumptruck1 Path4 10
+MOVE Dumptruck1 path4 10
 //MOVE Dumptruck1 segment1 10
 TIME 10

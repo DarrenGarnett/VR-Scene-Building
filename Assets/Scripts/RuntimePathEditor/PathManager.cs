@@ -117,11 +117,13 @@ public class PathManager : MonoBehaviour
                     }
                 
                     // Apply snapping and straigtening while toggled
-                    if(snapToGround) SnapPath(curCreator);
-                    foreach(int segmentIndex in straightenedSegments) 
+                    foreach(int segmentIndex in straightenedSegments) StraightenSegment(curCreator, segmentIndex);
+                    if(snapToGround) 
                     {
-                        StraightenSegment(curCreator, segmentIndex);
+                        SnapPath(curCreator);
+                        curCreator.objectsFollowTerrain = true;
                     }
+                    else curCreator.objectsFollowTerrain = false;
 
                     //DrawNormals();
 
@@ -279,13 +281,13 @@ public class PathManager : MonoBehaviour
         //for(int i = 0; i < newCreator.path.localNormals.Length; i++) newCreator.path.localNormals[i] = Vector3.up;
 
         // Apply snapping and straigtening while toggled
+        foreach(int segmentIndex in straightenedSegments) StraightenSegment(newCreator, segmentIndex);
         if(snapToGround) 
         {
             SnapPath(newCreator);
             newCreator.objectsFollowTerrain = true;
         }
-
-        foreach(int segmentIndex in straightenedSegments) StraightenSegment(newCreator, segmentIndex);
+        else newCreator.objectsFollowTerrain = false;
 
         newPath.tag = "Path";
         UpdateDropdown();

@@ -89,6 +89,7 @@ namespace PathCreation.Examples
                 transform.position = pathPosition + prevPathOffset;
                 //transform.rotation = pathRotation * initRotation;
                 //transform.rotation = nextPathRotation;// * transform.rotation;
+                //transform.rotation = initRotation;
                 transform.rotation = GetNextRotation();
 
                 prevPathRotation = transform.rotation;
@@ -119,6 +120,8 @@ namespace PathCreation.Examples
 
         Quaternion GetNextRotation()
         {
+            pathCreator.objectsFollowTerrain = true;
+
             Quaternion nextRotation = Quaternion.identity;
             if(pathCreator.objectsFollowTerrain)
             {
@@ -145,7 +148,7 @@ namespace PathCreation.Examples
                     Vector3 vTerrain = qterrain.eulerAngles;
                     
                     Quaternion getRot = pathCreator.path.GetRotationAtDistance(distanceTravelled, endOfPathInstruction);// * initRotation;
-                    //nextRotation = getRotation;
+                    ////nextRotation = getRotation;
                     Vector3 vGetRot = getRot.eulerAngles;
 
                     Vector3 terrainPathedRot = vTerrain + initRotation.eulerAngles;
@@ -156,7 +159,7 @@ namespace PathCreation.Examples
                     //nextRotation = Quaternion.Slerp(transform.rotation, getRotation * qterrain, 0.01f);
 
                     //nextRotation = Quaternion.Euler(terrainPathedRot);
-                    nextRotation = Quaternion.Slerp(transform.rotation, Quaternion.Euler(terrainPathedRot), 0.01f);
+                    nextRotation = Quaternion.Slerp(prevPathRotation, Quaternion.Euler(terrainPathedRot), 0.05f);
                     //nextRotation = Quaternion.Slerp(transform.rotation, Quaternion.Euler(terrainNormal.x, getRotation.y, terrainNormal.z), 0.25f);
                     
                     //nextRotation = Quaternion.Euler(getRotation) * Quaternion.Euler(terrainNormal);
