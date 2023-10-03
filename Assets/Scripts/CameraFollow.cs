@@ -32,7 +32,7 @@ public class CameraFollow : MonoBehaviour
                 Vector3 directions = target.transform.forward + target.transform.right + target.transform.up;
 
                 //get camera offset for the top, back, left corner, regardless of orientation
-                locationOffset = GetBounds(target).size;
+                locationOffset = Utility.GetBounds(target).size;
                 locationOffset.x *= zoom * directions.x;
                 locationOffset.y *= zoom * directions.y;
                 locationOffset.z *= zoom * directions.z;
@@ -57,36 +57,5 @@ public class CameraFollow : MonoBehaviour
             Quaternion smoothedrotation = Quaternion.Lerp(transform.rotation, desiredrotation, smoothSpeed);
             transform.rotation = smoothedrotation;
         }
-    }
-
-    //source: https://forum.unity.com/threads/getting-the-bounds-of-the-group-of-objects.70979/
-    public static Bounds GetBounds(GameObject obj)
-    {
-        Bounds bounds = new Bounds();
-
-        Renderer[] renderers = obj.GetComponentsInChildren<Renderer>();
-
-        if(renderers.Length > 0)
-        {
-            //Find first enabled renderer to start encapsulate from it
-            foreach (Renderer renderer in renderers)
-            {
-                if (renderer.enabled)
-                {
-                    bounds = renderer.bounds;
-                     break;
-                }
-            }
-
-            //Encapsulate for all renderers
-            foreach (Renderer renderer in renderers)
-            {
-                if (renderer.enabled)
-                {
-                    bounds.Encapsulate(renderer.bounds);
-                }
-            }
-        }
-        return bounds;
     }
 }

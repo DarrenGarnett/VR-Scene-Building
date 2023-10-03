@@ -39,10 +39,10 @@ public class CommandList
     private void initList(string file, float scale)
     {
         //if(File.Exists(Application.streamingAssetsPath + "/Text Files/" + file)) 
-        if(File.Exists(FileManager.textPath + file))
+        if(File.Exists(ArchiveManager.textPath + file))
         {
             //string[] input = System.IO.File.ReadAllLines(Application.streamingAssetsPath + "/Text Files/" + file);
-            string[] input = System.IO.File.ReadAllLines(FileManager.textPath + file);
+            string[] input = System.IO.File.ReadAllLines(ArchiveManager.textPath + file);
 
             List<string> lines = new List<string>();
 

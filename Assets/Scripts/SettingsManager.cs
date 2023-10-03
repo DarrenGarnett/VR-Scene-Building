@@ -12,7 +12,7 @@ public class SettingsManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        string[] settings = File.ReadAllLines(FileManager.rootPath + "/settings.txt");
+        string[] settings = File.ReadAllLines(ArchiveManager.rootPath + "/settings.txt");
         pathsVisible = bool.Parse(settings[0].Split(':')[1]);
         pathVisibilityToggle.isOn = pathsVisible;
         //Debug.Log(pathsVisible);
@@ -33,7 +33,7 @@ public class SettingsManager : MonoBehaviour
 
     void saveSettings()
     {
-        File.WriteAllText(FileManager.rootPath + "/settings.txt", "Paths Visible:" + pathsVisible);
+        File.WriteAllText(ArchiveManager.rootPath + "/settings.txt", "Paths Visible:" + pathsVisible);
         //Debug.Log(JsonUtility.ToJson(this));
     }
 }

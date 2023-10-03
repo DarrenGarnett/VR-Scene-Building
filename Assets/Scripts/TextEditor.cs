@@ -20,7 +20,7 @@ public class TextEditor : MonoBehaviour
     void Start()
     {
         fileDropdown.options.Clear();
-        foreach(string file in FileManager.textFiles)
+        foreach(string file in ArchiveManager.textFiles)
         {
             fileDropdown.options.Add(new TMP_Dropdown.OptionData() {text = file});
         }
@@ -33,9 +33,9 @@ public class TextEditor : MonoBehaviour
 
     void getText(string filename)
     {
-        if(File.Exists(FileManager.textPath + filename))
+        if(File.Exists(ArchiveManager.textPath + filename))
         {
-            curText = File.ReadAllText(FileManager.textPath + filename);
+            curText = File.ReadAllText(ArchiveManager.textPath + filename);
             fileInput.text = curText;
         }
         else Debug.LogError(filename + " could not be opened.");
@@ -43,7 +43,7 @@ public class TextEditor : MonoBehaviour
 
     public void setText()
     {
-        File.WriteAllText(FileManager.textPath + curFile, fileInput.text);
+        File.WriteAllText(ArchiveManager.textPath + curFile, fileInput.text);
         editsMade = true;
     }
 
@@ -55,7 +55,7 @@ public class TextEditor : MonoBehaviour
 
     public void switchFile()
     {
-        curFile = FileManager.textFiles[fileDropdown.value];
+        curFile = ArchiveManager.textFiles[fileDropdown.value];
         getText(curFile);
     }
 

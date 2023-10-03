@@ -46,9 +46,9 @@ public class PathManager : MonoBehaviour
         normalRend.endWidth = 0.05f;
 
         waypointSpawn = new Vector3(-10, 0, 0);
-        waypointSpawn.y = heightAboveTerrain + Terrain.activeTerrain.SampleHeight(waypointSpawn);
+        if(Terrain.activeTerrain) waypointSpawn.y = heightAboveTerrain + Terrain.activeTerrain.SampleHeight(waypointSpawn);
         
-        terrainCollider = Terrain.activeTerrain.GetComponent<TerrainCollider>();
+        if(Terrain.activeTerrain) terrainCollider = Terrain.activeTerrain.GetComponent<TerrainCollider>();
     }
 
     IEnumerator MonitorNameInput()

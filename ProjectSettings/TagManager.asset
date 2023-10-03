@@ -15,6 +15,9 @@ TagManager:
   - PathParent
   - PathEdit
   - PathManager
+  - PrefabParent
+  - ListParent
+  - PrefabList
   layers:
   - Default
   - TransparentFX
@@ -22,7 +25,7 @@ TagManager:
   - 
   - Water
   - UI
-  - 
+  - Preview
   - 
   - 
   - 
