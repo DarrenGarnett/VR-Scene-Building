@@ -387,6 +387,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   nameInput: {fileID: 4331255471572893818}
+  background: {fileID: 352718024218306388}
 --- !u!1 &4584260605023290665
 GameObject:
   m_ObjectHideFlags: 0

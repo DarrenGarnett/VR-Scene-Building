@@ -878,8 +878,8 @@ public class SceneManip : MonoBehaviour
         //foreach(Command c in commandList.commands) Debug.LogError(c.time + ": " + c.line);
         
         //globalTime.ResetSlider(commandList.commands[commandList.commands.Count - 1].time);
-        if(sceneDuration == 0) GlobalTimeScript.ResetSlider(Convert.ToSingle(bounds.Split('-')[2]));
-        else GlobalTimeScript.ResetSlider(sceneDuration);
+        if(sceneDuration == 0) globalTime.ResetSlider(Convert.ToSingle(bounds.Split('-')[2]));//GlobalTimeScript.ResetSlider(Convert.ToSingle(bounds.Split('-')[2]));
+        else globalTime.ResetSlider(sceneDuration);//GlobalTimeScript.ResetSlider(sceneDuration);
 
         index = 0;
     }

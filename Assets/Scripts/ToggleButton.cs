@@ -13,6 +13,8 @@ public class ToggleButton : MonoBehaviour, IPointerClickHandler
     public Color offColor;
     public bool overrideButtonColor = false;
 
+    public GameObject toggleObject;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -30,6 +32,12 @@ public class ToggleButton : MonoBehaviour, IPointerClickHandler
         {
             if(on) background.color = onColor;
             else background.color = offColor;
+        }
+
+        if(toggleObject)
+        {
+            if(toggleObject.activeSelf) toggleObject.SetActive(false);
+            else toggleObject.SetActive(true);
         }
     }
 
