@@ -14110,7 +14110,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1259063366
 Transform:
   m_ObjectHideFlags: 0
@@ -20197,7 +20197,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6ee82b8eb3e68ef4a8dcd4c169da6a6d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  prefabList: {fileID: 915832541}
+  prefabListUtil: {fileID: 915832541}
   listButton: {fileID: 4388348949670335787, guid: 296bee9b17fe80f44b7ad627d17551fd, type: 3}
   previewCameraObj: {fileID: 285512856}
   transformEditor: {fileID: 451303406}

@@ -50,7 +50,8 @@ public class ListButton : MonoBehaviour, IPointerClickHandler
         nameInput.SetActive(true);
         
         nameInputField = nameInput.GetComponent<TMP_InputField>();
-        nameInputField.text = gameObject.name;
+        //nameInputField.text = gameObject.name;
+        nameInputField.text = gameObject.GetComponentInChildren<TMP_Text>().text;
 
         nameInputField.Select();
         nameInputField.MoveToEndOfLine(false, false);
@@ -61,7 +62,7 @@ public class ListButton : MonoBehaviour, IPointerClickHandler
         nameInput.SetActive(false);
 
         ListUtil.ChangeText(gameObject, nameInputField.text);
-        ArchiveManager.SetName(gameObject.name, nameInputField.text);
-        gameObject.name = nameInputField.text;
+        ArchiveManager.SetDisplayName(gameObject.name, nameInputField.text);
+        //gameObject.name = nameInputField.text;
     }
 }

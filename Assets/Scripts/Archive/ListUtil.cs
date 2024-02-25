@@ -17,12 +17,12 @@ public class ListUtil : MonoBehaviour
         //foreach(GameObject obj in listObjects) Debug.Log(obj.name);
     }
 
-    public void AddToList(GameObject obj, string name)
+    public void AddToList(GameObject obj, string name, string displayName)
     {
         //Debug.Log("Making a button for " + name);
         obj = Instantiate(obj, listParent.transform);
         obj.name = name;
-        ChangeText(obj, name);
+        ChangeText(obj, displayName);
 
         listObjects.Add(obj);
     }
@@ -54,6 +54,12 @@ public class ListUtil : MonoBehaviour
 
     public void SelectByName(string objectName)
     {
+        if(selectedObject)
+        {
+            Image selectedImage = selectedObject.GetComponent<Image>();
+            selectedImage.color = unselected;
+        }
+
         selectedObject = listObjects.Find(obj => obj.name == objectName);
 
         if(selectedObject)
