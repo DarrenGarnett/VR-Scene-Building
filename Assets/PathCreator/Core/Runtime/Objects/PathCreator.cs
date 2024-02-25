@@ -16,6 +16,7 @@ namespace PathCreation {
         bool initialized;
         Vector3 prevPosition;
         private bool visible;
+        public bool objectsFollowTerrain = false;
 
         GlobalDisplaySettings globalEditorDisplaySettings;
 
@@ -55,23 +56,71 @@ namespace PathCreation {
                 {
                     //Debug.Log("Already have linerend, resetting...");
                     lineRend.positionCount = 0;
+                    lineRend.enabled = true;
                 }
 
-                //https://forum.unity.com/threads/cant-set-color-for-linerenderer-always-comes-out-as-magenta-or-black.968447/
-                //lineRend.material = new Material(Shader.Find("PathLine"));
-                lineRend.material = (Material)Resources.Load("PathLine", typeof(Material));
+                //https://stackoverflow.com/questions/72240485/how-to-add-the-default-line-material-back-to-the-linerenderer-material
+                lineRend.material = new Material(Shader.Find("Legacy Shaders/Particles/Alpha Blended Premultiply"));
 
-                //lineRend.startColor = Color.green;
-                //lineRend.endColor = Color.green;
-                lineRend.startWidth = 0.4f;
-                lineRend.endWidth = 0.4f;
+                lineRend.startColor = Color.green;
+                lineRend.endColor = Color.green;
+                lineRend.startWidth = 0.2f;
+                lineRend.endWidth = 0.2f;
                 lineRend.loop = false;
-                lineRend.positionCount = path.NumPoints;
+                
+                lineRend.positionCount = path.localPoints.Length;
+                for(int i = 0; i < path.localPoints.Length; i++) lineRend.SetPosition(i, path.localPoints[i]);
+
+                /*lineRend.positionCount = path.NumPoints;
+                for (int i = 0; i < path.NumPoints; i++)
+                {
+                    lineRend.SetPosition(i, path.GetPoint(i));
+                }*/
+            }
+        }
+
+        public void DrawPathEdit()
+        {
+            if(path != null) 
+            {
+                //draw through line
+                gameObject.TryGetComponent<LineRenderer>(out LineRenderer lineRend);
+                if(lineRend == null) lineRend = gameObject.AddComponent<LineRenderer>() as LineRenderer;
+                else 
+                {
+                    //Debug.Log("Already have linerend, resetting...");
+                    lineRend.positionCount = 0;
+                    lineRend.enabled = true;
+                }
+
+                //https://stackoverflow.com/questions/72240485/how-to-add-the-default-line-material-back-to-the-linerenderer-material
+                lineRend.material = new Material(Shader.Find("Legacy Shaders/Particles/Alpha Blended Premultiply"));
+
+                lineRend.startColor = Color.magenta;
+                lineRend.endColor = Color.magenta;
+                lineRend.startWidth = 0.5f;
+                lineRend.endWidth = 0.5f;
+                lineRend.loop = false;
+
+                lineRend.positionCount = path.localPoints.Length;
+                for(int i = 0; i < path.localPoints.Length; i++) lineRend.SetPosition(i, path.localPoints[i]);
+
+                /*lineRend.positionCount = path.NumPoints;
 
                 for (int i = 0; i < path.NumPoints; i++)
                 {
                     lineRend.SetPosition(i, path.GetPoint(i));
-                }
+                }*/
+
+                //draw ends
+                /*GameObject startPoint = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+                startPoint.transform.position = path.GetPoint(0);
+                startPoint.tag = "PathEdit";
+
+                GameObject endPoint = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+                endPoint.transform.position = path.GetPoint(path.NumPoints - 1);
+                endPoint.tag = "PathEdit";*/
+
             }
         }
 
@@ -85,6 +134,7 @@ namespace PathCreation {
                 {
                     lineRend.positionCount = 0;
                 }
+                lineRend.enabled = false;
             }
         }
 

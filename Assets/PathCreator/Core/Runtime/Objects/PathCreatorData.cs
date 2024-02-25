@@ -100,7 +100,10 @@ namespace PathCreation {
             // create new vertex path if path was modified since this vertex path was created
             if (!vertexPathUpToDate || _vertexPath == null) {
                 vertexPathUpToDate = true;
-                _vertexPath = new VertexPath (bezierPath, transform, vertexPathMaxAngleError, vertexPathMinVertexSpacing);
+                //_vertexPath = new VertexPath (bezierPath, transform, vertexPathMaxAngleError, vertexPathMinVertexSpacing);
+                
+                // use other VertexPath constructor for even point distribution
+                _vertexPath = new VertexPath (bezierPath, transform, 0.2f);
             }
             return _vertexPath;
         }

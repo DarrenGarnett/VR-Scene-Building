@@ -16,16 +16,17 @@ public class SwitchCameraScript : MonoBehaviour
     int modelsIdx;
 
     // Main camera and follow camera
-    public Camera mainCamera, followCamera;
+    public Camera mainCamera, followCamera;//, topdownCamera;
 
     // UI element to control the movement of the main camera
-    private GameObject mainCameraControls;
+    //private GameObject mainCameraControls;
 
     private void Start()
     {
         mainCameraActive = true;
         mainCamera.enabled = true;
         followCamera.enabled = false;
+        //topdownCamera.enabled = false;
 
         //Get any target objects within the scene objects before runtime with Target tag
         GameObject[] modelsArray = GameObject.FindGameObjectsWithTag("Target");
@@ -33,7 +34,7 @@ public class SwitchCameraScript : MonoBehaviour
         size = models.Count;
         initSize = size;
 
-        mainCameraControls = GameObject.FindGameObjectWithTag("MainCameraMovement");
+        //mainCameraControls = GameObject.FindGameObjectWithTag("MainCamera");
         modelsIdx = 0;
         //CameraFollow.target = models[modelsIdx];
         CameraFollow.target = null;
@@ -48,12 +49,15 @@ public class SwitchCameraScript : MonoBehaviour
          */
         if(mainCameraActive)
         {
-            mainCamera.enabled = false;
-            mainCameraActive = false;
-            followCamera.enabled = true;
-            CameraFollow.target = models[modelsIdx];
-            mainCameraControls.SetActive(false);
-            CameraMovement.drag = false;
+            if(size != 0)
+            {
+                mainCamera.enabled = false;
+                mainCameraActive = false;
+                followCamera.enabled = true;
+                CameraFollow.target = models[modelsIdx];
+                CameraMovement.lockMovement = true;
+           }
+            else Debug.Log("No targets, doing nothing...");
         }
         /*
          * Case where followCamera is using the last model in models;
@@ -66,8 +70,7 @@ public class SwitchCameraScript : MonoBehaviour
             followCamera.enabled = false;
             mainCamera.enabled = true;
             mainCameraActive = true;
-            mainCameraControls.SetActive(true);
-            CameraMovement.drag = true;
+            CameraMovement.lockMovement = false;
         }
         /*
          * All other cases;
@@ -79,15 +82,34 @@ public class SwitchCameraScript : MonoBehaviour
             CameraFollow.target = models[modelsIdx];
         }
     }
-
+/*
+    public void ToggleTopDownView()
+    {
+        if(topdownCamera.enabled)
+        {
+            //Debug.Log("Exiting topdown...");
+            mainCamera.enabled = true;
+            mainCameraActive = true;
+            followCamera.enabled = false;
+            topdownCamera.enabled = false;
+        }
+        else
+        {
+            //Debug.Log("Switching to topdown...");
+            mainCamera.enabled = false;
+            mainCameraActive = false;
+            followCamera.enabled = false;
+            topdownCamera.enabled = true;
+        }
+    }
+*/
     public void ChangeTarget(GameObject targetObj)
     {
         mainCamera.enabled = false;
         mainCameraActive = false;
         followCamera.enabled = true;
         CameraFollow.target = targetObj;
-        mainCameraControls.SetActive(false);
-        CameraMovement.drag = false;
+        CameraMovement.lockMovement = true;
     }
 
     public void addTarget(GameObject targetObj)
@@ -109,17 +131,16 @@ public class SwitchCameraScript : MonoBehaviour
         size = initSize;
     }
 
-    public void resetCamera()
+    public void SetDefault()
     {
-        mainCamera.transform.rotation = Quaternion.Euler(0, 0, 0);
+        //mainCamera.transform.rotation = Quaternion.Euler(0, 0, 0);
 
         if(!mainCameraActive)
         {
             mainCamera.enabled = true;
             mainCameraActive = true;
             followCamera.enabled = false;
-            mainCameraControls.SetActive(true);
-            CameraMovement.drag = true;
+            CameraMovement.lockMovement = false;
         }
     }
 }
