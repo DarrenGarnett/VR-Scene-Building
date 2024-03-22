@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using PathCreation;
+using System.IO;
 
 public class PathManager : MonoBehaviour
 {
@@ -39,6 +40,7 @@ public class PathManager : MonoBehaviour
     
     void Start()
     {
+        RecallPathData();
         UpdateDropdown();
 
         normalRend = gameObject.GetComponent<LineRenderer>();
@@ -49,6 +51,87 @@ public class PathManager : MonoBehaviour
         if(Terrain.activeTerrain) waypointSpawn.y = heightAboveTerrain + Terrain.activeTerrain.SampleHeight(waypointSpawn);
         
         if(Terrain.activeTerrain) terrainCollider = Terrain.activeTerrain.GetComponent<TerrainCollider>();
+    }
+
+    void OnApplicationQuit()
+    {
+        StorePathData();
+    }
+
+    void StorePathData()
+    {
+        List<string> data = new List<string>();
+
+        //Debug.Log("Storing " + paths.Count + " paths.");
+        for(int i = 0; i < paths.Count; i++)
+        {
+            BezierPath pathData = paths[i].GetComponent<PathCreator>().bezierPath;
+
+            List<Vector3> points = pathData.GetPoints();
+
+            string pointTransforms = "";
+
+            foreach(Vector3 point in points)
+            {
+                pointTransforms += Utility.VecToText(point) + '|';
+            }
+
+            pointTransforms = pointTransforms.Remove(pointTransforms.Length - 1);
+            data.Add(paths[i].name + '|' + pointTransforms);
+        }
+
+        File.WriteAllLines(ArchiveManager.pathPath + "/PathData.txt", data);
+    }
+
+    void RecallPathData()
+    {
+        //Debug.Log("Recalling path data...");
+
+        if(!File.Exists(ArchiveManager.pathPath + "/PathData.txt")) return;
+
+        string[] lines = File.ReadAllLines(ArchiveManager.pathPath + "/PathData.txt");
+        List<GameObject> existingPaths = Utility.GetChildren(GameObject.FindGameObjectWithTag("PathParent"));
+        string existingPathNames = Utility.GetNames(existingPaths);
+        
+        foreach(string line in lines)
+        {
+            string[] terms = line.Split('|');
+            GameObject pathObject = existingPaths.Find(pathObject => pathObject.name == terms[0]);
+            if(pathObject == null)
+            {
+                pathObject = new GameObject(terms[0]);
+                pathObject.tag = "Path";
+                pathObject.transform.parent = GameObject.FindGameObjectWithTag("PathParent").transform;
+                pathObject.AddComponent<PathCreator>();
+            }
+
+            //BezierPath bezierPath = pathObject.GetComponent<PathCreator>().bezierPath;
+            PathCreator pathCreator = pathObject.GetComponent<PathCreator>();
+
+            List<Vector3> points = new List<Vector3>();
+            for(int i = 1; i < terms.Length; i++)
+            {
+                //Debug.Log(Utility.TextToVec(terms[i]));
+                points.Add(Utility.TextToVec(terms[i]));
+            }
+
+            //bezierPath = new BezierPath(points.ToArray());
+            pathCreator.bezierPath = new BezierPath(points.ToArray());
+            //foreach(Vector3 point in bezierPath.GetControls()) Debug.Log(point);
+            //foreach(Vector3 point in bezierPath.GetAnchors()) Debug.Log(point);
+            //bezierPath = new BezierPath(bezierPath.GetAnchors());
+            
+            // Set normals to up by default(changes with snapping)
+            //for(int i = 0; i < buildingCreator.path.localNormals.Length; i++) buildingCreator.path.localNormals[i] = Vector3.up;
+
+            /*List<Vector3> points = bezierPath.GetPoints();
+            for(int pointIndex = 0; pointIndex < bezierPath.NumPoints - 2; pointIndex += 3)
+            {
+                bezierPath.SetPoint(pointIndex + 1, points[pointIndex + 1]);
+                bezierPath.SetPoint(pointIndex + 2, points[pointIndex + 2]);
+                controlIndex += 2;
+            }*/
+        }
     }
 
     IEnumerator MonitorNameInput()

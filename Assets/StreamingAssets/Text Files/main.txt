@@ -1,7 +1,12 @@
-INCLUDE demo.txt
-CREATE Dumptruck1 DumpTruck
+CREATE Dumptruck1 DumpTruck
+CREATE Dumptruck2 DumpTruck
+CREATE Dumptruck3 DumpTruck
+CREATE Dumptruck4 DumpTruck
+CREATE Bulldozer BullDozer1
 
-//CALL demo
-MOVE Dumptruck1 path4 10
-//MOVE Dumptruck1 segment1 10
+MOVE Dumptruck1 segment1 10
+MOVE Dumptruck2 segment2 10
+MOVE Dumptruck3 segment3 10
+MOVE Dumptruck4 segment4 10 
+
 TIME 10

@@ -131,6 +131,77 @@ namespace PathCreation {
             return points[i];
         }
 
+
+        /*
+        // not from original library
+        */
+
+        // Used when supplying all points(anchors and controls)
+        public BezierPath(Vector3[] pointsArray, bool isClosed = false, PathSpace space = PathSpace.xyz)
+        {
+            //Debug.Log("All Points Given. Trying to make BezierPath.");
+
+            if(pointsArray.Length < 4) Debug.LogError("Path requires at least 2 anchor and 2 control points.");
+            else 
+            {
+                //this.points = new List<Vector3>(pointsArray);
+                points = pointsArray.ToList();
+                //foreach(Vector3 point in points) Debug.Log(point);
+                //Debug.Log("creating path from array of size " + NumPoints);
+                controlMode = ControlMode.Automatic;
+                //this.points = new List<Vector3> {pointsArray[0], Vector3.zero, Vector3.zero, pointsArray[1]};
+                perAnchorNormalsAngle = new List<float>(new float[]{0, 0});
+
+                for(int i = 2; i < pointsArray.Length; i++) 
+                {
+                    //AddSegmentToEnd (pointsArray[i]);
+                    perAnchorNormalsAngle.Add (0);
+                }
+
+                NotifyPathModified();
+            }
+
+            this.Space = space;
+            this.IsClosed = isClosed;
+        }
+
+        // Get Array of all point positions in world space 
+        public List<Vector3> GetPoints()
+        {
+            return points;
+        }
+
+        // Get Array of anchor point positions in world space 
+        public List<Vector3> GetAnchors()
+        {
+            List<Vector3> anchors = new List<Vector3>();
+
+            for(int pointIndex = 0; pointIndex < NumPoints; pointIndex += 3) 
+            {
+                anchors.Add(points[pointIndex]);
+            }
+
+            return anchors;
+        }
+
+        // Get Array of control point positions in world space 
+        public List<Vector3> GetControls()
+        {
+            List<Vector3> controls = new List<Vector3>();
+
+            for(int pointIndex = 0; pointIndex < NumPoints - 2; pointIndex += 3)
+            {
+                controls.Add(points[pointIndex + 1]);
+                controls.Add(points[pointIndex + 2]);
+            }
+
+            return controls;
+        }
+
+        /*
+        // end of my section
+        */ 
+
         /// Get world space position of point
         public void SetPoint (int i, Vector3 localPosition, bool suppressPathModifiedEvent = false) {
             points[i] = localPosition;

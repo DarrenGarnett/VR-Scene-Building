@@ -50,6 +50,8 @@ public class ArchiveManager : MonoBehaviour
     public RectTransform previewWindow;
     public RenderTexture previewImage;
 
+    public static string pathPath;
+
 /*
 // File Management
 */
@@ -68,6 +70,7 @@ public class ArchiveManager : MonoBehaviour
         {
             textPath = rootPath + "/Text Files/";
             objectPath = rootPath + "/Objects/";
+            pathPath = rootPath + "/Paths/";
         }
 
         if(!inUnityEditor && dirCount > 0)
@@ -110,6 +113,7 @@ public class ArchiveManager : MonoBehaviour
     {
         textPath = Application.streamingAssetsPath + "/Text Files/";
         objectPath = Application.streamingAssetsPath + "/Objects/";
+        pathPath = Application.streamingAssetsPath + "/Paths/";
         MoveFilesToRoot();
 
         lineRend = gameObject.GetComponent<LineRenderer>();

@@ -43,6 +43,10 @@ namespace PathCreation.Examples
                 // need to define up direction for later calculation to avoid undefined behavior
                 //transform.up = new Vector3(0, 1, 0);
             }
+
+            // TEMPORARY
+            if(Terrain.activeTerrain) pathCreator.objectsFollowTerrain = true;
+            else pathCreator.objectsFollowTerrain = false;
         }
 
         void Update()
@@ -120,7 +124,7 @@ namespace PathCreation.Examples
 
         Quaternion GetNextRotation()
         {
-            pathCreator.objectsFollowTerrain = true;
+            //pathCreator.objectsFollowTerrain = true;
 
             Quaternion nextRotation = Quaternion.identity;
             if(pathCreator.objectsFollowTerrain)
@@ -164,7 +168,9 @@ namespace PathCreation.Examples
                     
                     //nextRotation = Quaternion.Euler(getRotation) * Quaternion.Euler(terrainNormal);
                 }
-                else Debug.Log("Ray miss on path follower");
+                else nextRotation = pathCreator.path.GetRotationAtDistance(distanceTravelled, endOfPathInstruction) * initRotation;
+                //else Debug.Log("Ray miss on path follower");
+                
             }
             else nextRotation = pathCreator.path.GetRotationAtDistance(distanceTravelled, endOfPathInstruction) * initRotation;
         

@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using System;
 
 public static class Utility
 {
@@ -15,6 +16,16 @@ public static class Utility
             children.Add(tran.gameObject);
         }
         return children;
+    }
+
+    public static string GetNames(List<GameObject> gameObjects)
+    {
+        string namesString = "";
+        foreach(GameObject gameObject in gameObjects)
+        {
+            namesString += gameObject.name + ',';
+        }
+        return namesString;
     }
 
     //source: https://forum.unity.com/threads/getting-the-bounds-of-the-group-of-objects.70979/
@@ -67,5 +78,23 @@ public static class Utility
             }
             SetLayerRecursively(child.gameObject, newLayer);
         }
+    }
+
+    public static string VecToText(Vector3 vec)
+    {
+        return vec.x.ToString() + ',' + vec.y.ToString() + ',' + vec.z.ToString();
+    }
+
+    public static Vector3 TextToVec(string text)
+    {
+        string[] terms = text.Split(',');
+        
+        if(terms.Length != 3)
+        {
+            Debug.LogError("Text For Vector3 must have 3 terms.");
+            return Vector3.zero;
+        }
+
+        return new Vector3(Convert.ToSingle(terms[0]), Convert.ToSingle(terms[1]), Convert.ToSingle(terms[2]));
     }
 }
