@@ -10,6 +10,7 @@ using System.Linq;
 using System.Reflection;
 using PathCreation;
 using PathCreation.Examples;
+using Dreamteck.Splines;
 
 public class Command
 {
@@ -685,36 +686,51 @@ public class SceneManip : MonoBehaviour
             setCurGameObject(terms[1]);
             if(curObject)
             {
-                //Get PathFollower component if there is one, and add one if there isn't
-                curObject.TryGetComponent<PathFollower>(out PathFollower curFollower);
-                if(curFollower == null) curFollower = curObject.AddComponent<PathFollower>() as PathFollower;
-                else curFollower.pathChanged = true;
-                curFollower.enabled = true;
+                //Set SplinFollower Component to curObject
+                SplineFollower splineFollower = curObject.AddComponent<SplineFollower>();
 
-                //Assign path by name
-                GameObject pathObject = GameObject.Find(terms[2]);
-                PathCreator curCreator = pathObject.GetComponent<PathCreator>() as PathCreator;
-
-                curFollower.pathCreator = curCreator;
-
-                //Set cycle duration
-                curFollower.cycleDuration = Convert.ToSingle(terms[3]) / timeScale;
-
-                curFollower.endOfPathInstruction = EndOfPathInstruction.Stop;
-
-                float progress = (globalTime.currTime - curCommand.time) / Convert.ToSingle(terms[3]);
-                float distance = progress * curCreator.path.length;
-
-                curFollower.offsetPosition = distance;
-
-                if(terms.Count() >= 8)
+                SplineComputer splineComputer = GameObject.Find(terms[2]).GetComponent<SplineComputer>();
+                if (splineComputer == null)
                 {
-                    Vector3 initAngles = new Vector3(Convert.ToSingle(terms[5]), Convert.ToSingle(terms[6]), Convert.ToSingle(terms[7]));
-                    curFollower.offsetRotation = Quaternion.Euler(initAngles);
+                    Debug.LogError("SplineComputer component not found on path object.");
+                    return 1;
                 }
 
-                if(SettingsManager.pathsVisible) curCreator.DrawPath();
-                pathObject.tag = "ActivePath";
+                splineFollower.spline = splineComputer;
+                splineFollower.followSpeed = 1.0f / timeScale; // Adjust based on your timeScale logic
+                splineFollower.wrapMode = SplineFollower.Wrap.Default;
+
+
+                /*                //Get PathFollower component if there is one, and add one if there isn't
+                                curObject.TryGetComponent<PathFollower>(out PathFollower curFollower);
+                                if(curFollower == null) curFollower = curObject.AddComponent<PathFollower>() as PathFollower;
+                                else curFollower.pathChanged = true;
+                                curFollower.enabled = true;
+
+                                //Assign path by name
+                                GameObject pathObject = GameObject.Find(terms[2]);
+                                PathCreator curCreator = pathObject.GetComponent<PathCreator>() as PathCreator;
+
+                                curFollower.pathCreator = curCreator;
+
+                                //Set cycle duration
+                                curFollower.cycleDuration = Convert.ToSingle(terms[3]) / timeScale;
+
+                                curFollower.endOfPathInstruction = EndOfPathInstruction.Stop;
+
+                                float progress = (globalTime.currTime - curCommand.time) / Convert.ToSingle(terms[3]);
+                                float distance = progress * curCreator.path.length;
+
+                                curFollower.offsetPosition = distance;
+
+                                if(terms.Count() >= 8)
+                                {
+                                    Vector3 initAngles = new Vector3(Convert.ToSingle(terms[5]), Convert.ToSingle(terms[6]), Convert.ToSingle(terms[7]));
+                                    curFollower.offsetRotation = Quaternion.Euler(initAngles);
+                                }
+
+                                if(SettingsManager.pathsVisible) curCreator.DrawPath();
+                                pathObject.tag = "ActivePath";*/
             }
             else Debug.LogError("MOVE: " + terms[1] + " was not found in the scene.");
         }

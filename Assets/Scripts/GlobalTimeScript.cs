@@ -19,7 +19,7 @@ public class GlobalTimeScript : MonoBehaviour, IPointerDownHandler, IPointerUpHa
     // Start is called before the first frame update
     void Start()
     {
-        //positionSlider = this.GetComponent<Slider>();
+        positionSlider = this.GetComponent<Slider>();
         
         prevTime = 0f;
         positionSlider.maxValue = runtime;

@@ -1,51 +1,51 @@
 //  create vehicles
-CREATE Dumptruck1 Dumptruck
-CREATE Dumptruck2 Dumptruck
-CREATE Dumptruck3 Dumptruck
-CREATE Dumptruck4 Dumptruck
-CREATE Dumptruck5 Dumptruck
-CREATE Dumptruck6 Dumptruck
-CREATE Bulldozer BullDozer1
-CREATE Rock Rock
-SETOBJCELL Rock Transform.position 27 8.8 27
+CREATE Cow1 Cow
+CREATE Cow2 Cow
+CREATE Cow3 Cow
+CREATE Cow4 Cow
+CREATE Cow5 Cow
+CREATE Cow6 Cow
+CREATE Cow7 Cow
+
 
 //  start moving them along the paths
-MOVE Dumptruck1 segment1 10
-MOVE Bulldozer segment3 5
+MOVE Cow1 segment1 10
+MOVE Cow2 segment3 5
+MOVE Cow3 segment1 10
 
 TIME 2
-MOVE Dumptruck2 segment1 10
+MOVE Cow2 segment1 10
 
 TIME 4
-MOVE Dumptruck3 segment1 10
+MOVE Cow3 segment1 10
 
 TIME 5
-SETOBJCELL Bulldozer Transform.rotation.y -90
-MOVE Bulldozer segment4 5
+SETOBJCELL Cow1 Transform.rotation.y -90
+MOVE Cow1 segment4 5
 
 TIME 6
-MOVE Dumptruck4 segment1 10
+MOVE Cow4 segment1 10
 
 TIME 8
-MOVE Dumptruck5 segment1 10
+MOVE Cow5 segment1 10
 
 TIME 10
-MOVE Dumptruck6 segment1 10
-MOVE Dumptruck1 segment2 10
+MOVE Cow6 segment1 10
+MOVE Cow1 segment2 10
 
 TIME 12
-MOVE Dumptruck2 segment2 10
+MOVE Cow2 segment2 10
 
 TIME 14
-MOVE Dumptruck3 segment2 10
+MOVE Cow3 segment2 10
 
 TIME 16
-MOVE Dumptruck4 segment2 10
+MOVE Cow4 segment2 10
 
 TIME 18
-MOVE Dumptruck5 segment2 10
+MOVE Cow5 segment2 10
 
 TIME 20
-MOVE Dumptruck6 segment2 10
+MOVE Cow6 segment2 10
 
 TIME 30
