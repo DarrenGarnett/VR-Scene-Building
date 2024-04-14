@@ -740,26 +740,51 @@ public class SceneManip : MonoBehaviour
     //Removes the specified object from its current path
     int removeFromPath(string[] terms)
     {
-        //Test for minimum terms
-        if(terms.Count() < 2)
+        // Check if the terms provided are sufficient
+        if (terms.Length < 2)
         {
-            Debug.LogError("Too few terms to remove path.");
+            Debug.LogError("Too few terms to remove from path.");
             return 1;
+        }
+
+        // Set the current GameObject based on the provided name
+        setCurGameObject(terms[1]);
+
+        // Get the SplineFollower component from the current object
+        SplineFollower splineFollower = curObject.GetComponent<SplineFollower>();
+
+        // Ensure the object is currently following a path
+        if (splineFollower != null)
+        {
+            splineFollower.enabled = false; // Optionally disable the follower to stop it from updating
+            splineFollower.spline = null; // Remove the spline reference to effectively detach the path
+            return 0; // Return success
         }
         else
         {
-            //curObject = GameObject.Find(terms[1]);
-            setCurGameObject(terms[1]);
-            
-            PathFollower curFollower = curObject.GetComponent<PathFollower>();
-            curFollower.distanceTravelled = curFollower.offsetPosition;
-
-            //Ensure object is following a path
-            if(curFollower != null) curFollower.pathCreator = null;
-            else Debug.LogError(terms[1] + " is not following a path.");
+            Debug.LogError("MOVE: " + terms[1] + " is not following a path.");
+            return 1; // Return error if no SplineFollower is found
         }
-        
-        return 0;
+        /*        //Test for minimum terms
+                if(terms.Count() < 2)
+                {
+                    Debug.LogError("Too few terms to remove path.");
+                    return 1;
+                }
+                else
+                {
+                    //curObject = GameObject.Find(terms[1]);
+                    setCurGameObject(terms[1]);
+
+                    PathFollower curFollower = curObject.GetComponent<PathFollower>();
+                    curFollower.distanceTravelled = curFollower.offsetPosition;
+
+                    //Ensure object is following a path
+                    if(curFollower != null) curFollower.pathCreator = null;
+                    else Debug.LogError(terms[1] + " is not following a path.");
+                }
+
+                return 0;*/
     }
 
     int pause(string[] terms)
