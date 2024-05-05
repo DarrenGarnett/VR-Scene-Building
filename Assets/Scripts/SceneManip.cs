@@ -695,10 +695,16 @@ public class SceneManip : MonoBehaviour
                     Debug.LogError("SplineComputer component not found on path object.");
                     return 1;
                 }
-
+                //follow the spline based on duration not speed?
+                //Here I need to read time from txt file and assign it to duration?
                 splineFollower.spline = splineComputer;
-                splineFollower.followSpeed = 1.0f / timeScale; // Adjust based on your timeScale logic
+                splineFollower.followMode = SplineFollower.FollowMode.Time;
+                splineFollower.followDuration = Convert.ToSingle(terms[3]) / timeScale;
                 splineFollower.wrapMode = SplineFollower.Wrap.Default;
+
+/*                splineFollower.spline = splineComputer;
+                splineFollower.followSpeed = 1.0f / timeScale; // Adjust based on your timeScale logic
+                splineFollower.wrapMode = SplineFollower.Wrap.Default;*/
 
 
                 /*                //Get PathFollower component if there is one, and add one if there isn't

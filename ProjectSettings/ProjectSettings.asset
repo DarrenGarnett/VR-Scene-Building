@@ -616,6 +616,7 @@ PlayerSettings:
   webGLPowerPreference: 2
   scriptingDefineSymbols:
     Standalone: DREAMTECK_SPLINES
+    WebGL: DREAMTECK_SPLINES
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend: {}
