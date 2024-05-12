@@ -21,6 +21,7 @@ public class PauseScript : MonoBehaviour
         pauseButton = PBCopy;
     }
 
+    
     public static void PauseFunction()
     {
         // Case where animation is playing

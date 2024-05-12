@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using PathCreation;
+using Dreamteck.Splines; // Add this to the existing using statements
 
 public class PathManager : MonoBehaviour
 {
@@ -36,7 +37,8 @@ public class PathManager : MonoBehaviour
 
     public bool snapToGround = false;
     List<int> straightenedSegments = new List<int>();
-    
+    public SplineComputer splineComputerPrefab; // Add a public field to assign a SplineComputer prefab
+
     void Start()
     {
         UpdateDropdown();
@@ -243,19 +245,19 @@ public class PathManager : MonoBehaviour
 
     public void CreateNewPath()
     {   
-        inPathCreation = true;
+        //inPathCreation = true;
 
-        pathNameInput.text = "Path" + paths.Count;
+        //pathNameInput.text = "Path" + paths.Count;
 
-        GameObject buildingPath = new GameObject("BuildingPath");
-        PathCreator buildingCreator = buildingPath.AddComponent<PathCreator>();
-        buildingCreator.bezierPath.DeleteSegment(0);
-        buildingCreator.bezierPath.DeleteSegment(1);
+        //GameObject buildingPath = new GameObject("BuildingPath");
+        //PathCreator buildingCreator = buildingPath.AddComponent<PathCreator>();
+        //buildingCreator.bezierPath.DeleteSegment(0);
+        //buildingCreator.bezierPath.DeleteSegment(1);
         
-        SetCurPath(buildingPath);
-        pathInCreation = buildingPath;
+        //SetCurPath(buildingPath);
+        //pathInCreation = buildingPath;
 
-        StartCoroutine(MonitorNameInput());
+        //StartCoroutine(MonitorNameInput());
     }
 
     public void CancelNewPath()

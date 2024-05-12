@@ -64,6 +64,7 @@ public class TextEditor : MonoBehaviour
         if(!PauseScript.paused) PauseScript.PauseFunction();
     }
 
+    // resetting the game or scene's current time to zero if edits were made to ensure synchronization with new settings or script contents.
     public void closeFileSelector()
     {
         if(editsMade)
